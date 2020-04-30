@@ -5,8 +5,12 @@ const tree = [
     name: "Wunderwaffe",
     expanded: false,
     properties: [
-      { id: 1, type: "boolean", value: 'yes', name: "Hard" },
+      { id: 1, type: "boolean", value: true, name: "Hard" },
       { id: 2, type: "text", value: "Coding project sfdds fsdf sdf sdf sdfs sfd sdf sdf sdf ", name: "Type" },
+      { id: 3, type: 'list', name: 'Furniture', value: [
+        { id: 1, key: 'Chairs', value: 3 },
+        { id: 2, key: 'Tables', value: 1 },
+      ] }
     ],
     items: [
       {

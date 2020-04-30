@@ -96,7 +96,8 @@ const ButtonsLauncher = styled.div`
     left: 2px;
     right: 2px;
     background: #333;
-    transform: rotate(45deg) scale(0.7);
+    transform: rotate(45deg) scale(0.6);
+    transition: transform 0.3s;
   }
 `
 
@@ -131,7 +132,9 @@ const Input = styled.input`
   -webkit-appearance: none;
   outline: none;
   border: none;
-  padding: 1px 10px 2px;
+  padding: 2px 10px;
+  display: block;
+  margin: 0 auto;
   text-align: center;
   font-size: 14px;
 
@@ -139,14 +142,11 @@ const Input = styled.input`
   color: ${({ color }) => color };
 
   background: transparent;
+
   &[data-rename="type"] {
     text-transform: uppercase;
     font-size: 12px;
   }
-`
-
-const Checkbox = styled.input`
-
 `
 
 const ButtonsContainerPos = styled.div`
@@ -161,13 +161,14 @@ const ButtonsContainer = styled.div`
   align-items: flex-start;
   margin-left: 10px;
   z-index: 10;
-  /* outline: none; */
+  outline: none;
 `
 
 const TypeContainer = styled.div`
-  background: linear-gradient(45deg, #357, #579);
+  background: linear-gradient(-45deg,#88ffe4,#5874ff);
   width: 100%;
   text-align: center;
+  border-bottom: 1px solid #333;
 `
 
 const Type = styled.div`
@@ -186,7 +187,6 @@ const Name = styled.div`
   text-align: center;
   font-size: 14px;
 
-  border-top: 1px solid #333;
   width: 100%;
   padding: 2px 10px;
 `
@@ -195,11 +195,13 @@ const ItemsContainer = styled.div`
   display: flex;
 `
 
-const Properties = styled.div`
+const PropertiesContainer = styled.div`
   display: block;
   padding: 3px 10px;
   margin-top: 1px;
   border-top: 1px solid #999;
+  width: 100%;
+  border-top-style: dashed;
 `
 
 const PropertyContainer = styled.div`
@@ -207,12 +209,7 @@ const PropertyContainer = styled.div`
   font-size: 12px;
   padding-left: 10px;
   position: relative;
-`
-
-const PropertyName = styled.div`
-  font-weight: 700;
-  padding-right: 5px;
-  color: #333;
+  width: 100%;
 
   &::before {
     content: '';
@@ -226,8 +223,20 @@ const PropertyName = styled.div`
   }
 `
 
+const PropertyName = styled.div`
+  font-weight: 700;
+  padding-right: 5px;
+  color: #333;
+  flex: 0;
+  position: relative;
+  white-space: nowrap;
+`
+
 const PropertyValue = styled.div`
   color: #333;
+  flex: 1;
+  position: relative;
+  margin-left: 10px;
 `
 
 const Button = styled.button`
@@ -237,6 +246,7 @@ const Button = styled.button`
   border: 1px solid ${({ isRed }) => isRed ? "#f88" : "#777"};
   border-radius: 4px;
   ${({ animation }) => animation !== 'show' && 'pointer-events: none;'}
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
 
   &:hover, &:focus {
     background: ${({ isRed }) => isRed ? "#f88" : "#fb0"};
@@ -326,51 +336,112 @@ const HasItemsIndicator = styled.div`
   }
 `
 
-const PropertyInputContainer = styled.div``
+const PropInput = styled(Input)`
+  position: absolute;
+  top: 0;
+  left: 0px;
+  font-size: 12px;
+  text-align: left;
+  padding: 0;
+  width: 100%;
+  & + & {
+    margin-left: 10px;
+  }
 
-const PropertyInput = ({ type, addLinkProp }) => {
-  const nameInputRef = useRef(null)
-  const valueInputRef = useRef(null)
-  const [prop, setProp] = useState({ name: '', value: '', type: 'boolean' })
+  &[data-prop-type='value'] {
+    font-weight: normal;
+  }
+`
 
-  useEffect(() => {
-    setTimeout(() => {
-      nameInputRef.current && nameInputRef.current.focus()
-    }, 20)
-  }, [])
+const PropSelect = styled.select`
+  position: absolute;
+  top: 0;
+  left: 0;
+`
 
-  const onInputKeyDown = useCallback((event) => {
-    if (event.key === 'Enter') {
-      if (event.target.getAttribute('data-prop-type') === 'name') {
-        return
-      }
-      addLinkProp(prop)
+const InputFiller = styled.span`
+  display: block;
+  color: transparent;
+  padding: 0;
+  user-select: 0;
+  font-size: 12px;
+  white-space: pre;
+  max-width: 125px;
+`
+
+function isTextSelected(input) {
+    if (typeof input.selectionStart == "number") {
+        return input.selectionStart === 0 && input.selectionEnd === input.value.length;
+    } else if (typeof document.selection != "undefined") {
+        input.focus();
+        return document.selection.createRange().text === input.value;
     }
-  }, [prop, addLinkProp])
+}
 
-  const addProp = useCallback(() => {
+const PropsListContainer = styled.div`
 
-  }, [])
+`
 
-  const onInputChange = useCallback(event => {
-    const type = event.target.getAttribute('data-prop-type')
-    setProp({ ...prop, [type]: event.target.value })
-  }, [prop])
+const PropsListValue = styled.div`
+
+`
+
+const PropsList = ({list}) => {
+
+  return (  <PropsListContainer>
+    {list.map(item => (
+      <PropsListValue key={item.id} >{`- ${item.key}: ${item.value}`}</PropsListValue>
+    ))}
+  </PropsListContainer>
+)}
+
+const Property = ({ property, enablePropChanging, changingProperty, onPropInputFocus, onPropInputBlur, propNameInputRef, onPropInputKeyDown, onPropChange, propValueInputRef }) => {
+  const value = useMemo(() => property.type === 'boolean' ? (property.value ? 'Yes' : 'No') : property.value, [property])
 
   return (
-    <PropertyInputContainer>
-      <Input tabIndex="1" ref={nameInputRef} data-prop-type="name" onKeyDown={onInputKeyDown} onChange={onInputChange} onBlur={addProp} value={prop.name} color={"#333"} />
-      {
-        type === 'text' ?
-      <Input tabIndex="2" ref={valueInputRef} data-prop-type="value" onKeyDown={onInputKeyDown} onChange={onInputChange} onBlur={addProp} value={prop.value} color={"#333"} />
-      : type === 'boolean' ?
-        <select ref={valueInputRef}>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
-        </select>
-      : null
+    <PropertyContainer draggable key={property.id} data-prop-id={property.id} onDoubleClick={enablePropChanging} >
+      <PropertyName data-prop-type="name" >
+      {changingProperty && changingProperty.id === property.id ?
+        <>
+          <InputFiller>{changingProperty.name || 'Key'}</InputFiller>
+          <PropInput autoFocus onFocus={onPropInputFocus} onBlur={onPropInputBlur} tabIndex="1" ref={propNameInputRef} placeholder="Key" data-prop-type="name" onKeyDown={onPropInputKeyDown} onChange={onPropChange} value={changingProperty.name} color={"#333"} />
+        </>
+        :
+        `${property.name}:`
       }
-    </PropertyInputContainer>
+      </PropertyName>
+      <PropertyValue data-prop-type="value">
+        {changingProperty && changingProperty.id === property.id ?
+          <>
+            <InputFiller>{changingProperty.value || 'Value'}</InputFiller>
+            {
+              changingProperty.type === 'text' ?
+              <PropInput onFocus={onPropInputFocus} onBlur={onPropInputBlur} ref={propValueInputRef} tabIndex="2" placeholder="Value" data-prop-type="value" onKeyDown={onPropInputKeyDown} onChange={onPropChange} value={changingProperty.value} color={"#333"} />
+              :
+              <PropSelect onFocus={onPropInputFocus} onBlur={onPropInputBlur} ref={propValueInputRef} onChange={onPropChange} data-prop-type="value" value={changingProperty.value} tabIndex="2" >
+                <option value="true">Yes</option>
+                <option value="false">No</option>
+              </PropSelect>
+            }
+          </>
+           :
+           (property.type === 'list' ?
+           <PropsList list={property.value} />
+           :
+             value)}
+      </PropertyValue>
+    </PropertyContainer>
+  )
+}
+
+const Properties = ({ link, changingProperty, enablePropChanging, onPropInputFocus, onPropInputBlur, propNameInputRef, propValueInputRef, onPropChange, onPropInputKeyDown }) => {
+  return (
+    <PropertiesContainer>
+    {link.properties.map(property => (
+        <Property key={property.id} property={property} enablePropChanging={enablePropChanging} changingProperty={changingProperty} onPropInputFocus={onPropInputFocus} onPropInputBlur={onPropInputBlur} propNameInputRef={propNameInputRef} onPropInputKeyDown={onPropInputKeyDown} onPropChange={onPropChange} propValueInputRef={propValueInputRef}></Property>
+      ))
+    }
+    </PropertiesContainer>
   )
 }
 
@@ -386,6 +457,8 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
 
   const buttonsLauncherRef = useRef(null)
   const buttonsContainerRef = useRef(null)
+  const propNameInputRef = useRef(null)
+  const propValueInputRef = useRef(null)
 
   const deletePromptTimeout = useRef(null)
   const contextMenuTimeout = useRef(null)
@@ -504,12 +577,35 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
     if (!newLink) return
 
     const newLinkProp = {...prop}
+    const props = newLink.item.properties || []
 
-    newLinkProp.id = newLink.item.properties.length + 1
+    newLinkProp.id = props.length + 1
 
-    newLink.item.properties = [...newLink.item.properties, newLinkProp]
+    // TODO: desctruct the object first!
+    newLink.item.properties = [...props, newLinkProp]
 
     setTreeData(newTreeData)
+    return newLinkProp
+  }, [link, treeData, setTreeData])
+
+  const updateLinkProp = useCallback(prop => {
+    const newTreeData = [ ...treeData ]
+    const propData = { ...prop }
+
+    var newLink = findTreeLink({ items: newTreeData, id: link.id })
+    if (!newLink) return
+    var newLinkPropIndex = newLink.item.properties.findIndex(item => item.id === propData.id)
+    if (newLinkPropIndex === -1) return
+
+    if (prop.name === '' && prop.value === '') {
+      newLink.item.properties.splice(newLinkPropIndex, 1)
+    } else {
+      propData.value = propData.type === 'boolean' ? propData.value === 'true' : propData.value
+      newLink.item.properties[newLinkPropIndex] = { ...newLink.item.properties[newLinkPropIndex], ...propData }
+    }
+
+    setTreeData(newTreeData)
+    return newLink.item.properties[newLinkPropIndex]
   }, [link, treeData, setTreeData])
 
   const toggleChangeName = useCallback(() => {
@@ -528,7 +624,7 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
 
   const onBlur = useCallback((e) => {
     blurTimeoutRef.current = setTimeout(() => {
-      toggleShowContextMenu({blur: true})
+      toggleShowContextMenu({ blur: true })
     }, 100)
   }, [toggleShowContextMenu])
 
@@ -576,33 +672,88 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
     return result
   }, [showContextMenu])
 
-  const addPropType = useCallback(event => {
+  const addPropAndChange = useCallback(event => {
     onBlur()
+
     const type = event.target.getAttribute('data-prop-type')
-    setChangingProperty(type)
-  }, [onBlur])
+    const defaultValues = {
+      text: '',
+      boolean: false,
+      list: []
+    }
+    const value = defaultValues[type]
+    const prop = {
+      type,
+      name: '',
+      value,
+    }
+    const newProp = addLinkProp(prop)
+    setChangingProperty(newProp)
+  }, [onBlur, addLinkProp])
+
+  const onOkButtonClick = useCallback(() => {
+    updateLinkProp(changingProperty)
+    setChangingProperty(null)
+  }, [changingProperty, updateLinkProp])
+
+  const onPropInputKeyDown = useCallback(event => {
+    if (event.key === 'Enter') {
+      onOkButtonClick()
+    }
+  }, [onOkButtonClick])
+
+  const onPropChange = useCallback(event => {
+    const type = event.target.getAttribute('data-prop-type')
+    setChangingProperty({ ...changingProperty, [type]: event.target.value })
+  }, [changingProperty])
+
+  const [selectedPropInput, setSelectedPropInput] = useState(null)
+
+  const enablePropChanging = useCallback(event => {
+    const propId = event.currentTarget.getAttribute('data-prop-id')
+    if (!propId) return
+    setChangingProperty(link.properties.find(prop => prop.id === +propId))
+    const type = event.target.getAttribute('data-prop-type')
+    if (type) {
+      setSelectedPropInput(type)
+    }
+  }, [link])
+
+  useEffect(() => {
+    if (!selectedPropInput || (!changingProperty || changingProperty.type !== 'text')) return
+    if (selectedPropInput === 'name') {
+      propNameInputRef.current.select()
+    } else {
+      propValueInputRef.current.select()
+    }
+    setSelectedPropInput(null)
+  }, [changingProperty, selectedPropInput])
+
+  const propBlurTimeout = useRef(null)
+
+  const onPropInputBlur = useCallback(event => {
+    propBlurTimeout.current = setTimeout(() => {
+      onOkButtonClick()
+    }, 50)
+  }, [onOkButtonClick])
+
+  const onPropInputFocus = useCallback(event => {
+    if (changingProperty.type === 'text' && !isTextSelected(event.currentTarget)) {
+      event.currentTarget.select()
+    }
+    clearTimeout(propBlurTimeout.current)
+  }, [changingProperty])
 
   return (
     <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary} >
       <ContentContainer showContextMenu={showContextMenu} expanded={initialAnimation && link.expanded && link.items.length > 1} >
-        <Content>
+        <Content draggable>
           <TypeContainer onDoubleClick={toggleChangeType} >
             {renamingType === "type" ? <Input tabIndex="1" onKeyDown={onInputKeyDown} autoFocus data-rename="type" onChange={onInputChange} onBlur={renameLink} value={renaming.value} color={"#fff"} /> : <Type>{link.type}</Type>}
           </TypeContainer>
-          {renamingType === "name" ? <Input tabIndex="1" onKeyDown={onInputKeyDown} autoFocus data-rename="name" onChange={onInputChange} onBlur={renameLink} value={renaming.value} type="name" color={"#333"} /> : <Name onDoubleClick={toggleChangeName} >{link.name}</Name>}
-          {link.properties &&
-            <Properties>
-            {link.properties.map(property => (
-                <PropertyContainer key={property.id} >
-                  <PropertyName>{`${property.name}:`}</PropertyName>
-                  <PropertyValue>{property.value}</PropertyValue>
-                </PropertyContainer>
-              ))
-            }
-            {changingProperty && (
-              <PropertyInput type={changingProperty} addLinkProp={addLinkProp} />
-            )}
-            </Properties>
+          {renamingType === "name" ? <Input tabIndex="1" onKeyDown={onInputKeyDown} autoFocus data-rename="name" onChange={onInputChange} onBlur={renameLink} value={renaming.value} type="name" color={"#333"} /> : <Name onDoubleClick={toggleChangeName}>{link.name}</Name>}
+          {link.properties && link.properties.length > 0 &&
+            <Properties link={link} changingProperty={changingProperty} enablePropChanging={enablePropChanging} onPropInputFocus={onPropInputFocus} onPropInputBlur={onPropInputBlur} propNameInputRef={propNameInputRef} propValueInputRef={propValueInputRef} onPropChange={onPropChange} onPropInputKeyDown={onPropInputKeyDown}></Properties>
           }
         </Content>
           <ButtonsLauncher ref={buttonsLauncherRef} onClick={toggleShowContextMenu} />
@@ -612,9 +763,9 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
                 <ButtonsContainer ref={buttonsContainerRef} tabIndex="1" onFocus={onFocus} onBlur={onBlur}>
                   {showPropertiesOptions ?
                     <>
-                      <Button tabIndex="2" animation={buttonsAnimation} index={1} data-prop-type="text" onClick={addPropType} >{"Text"}</Button>
-                      <Button tabIndex="3" animation={buttonsAnimation} index={2} data-prop-type="boolean" onClick={addPropType} >{"Boolean"}</Button>
-                      <Button tabIndex="4" animation={buttonsAnimation} index={3} data-prop-type="list" onClick={addPropType} >{"List"}</Button>
+                      <Button tabIndex="2" animation={buttonsAnimation} index={1} data-prop-type="text" onClick={addPropAndChange} >{"Text"}</Button>
+                      <Button tabIndex="3" animation={buttonsAnimation} index={2} data-prop-type="boolean" onClick={addPropAndChange} >{"Boolean"}</Button>
+                      <Button tabIndex="4" animation={buttonsAnimation} index={3} data-prop-type="list" onClick={addPropAndChange} >{"List"}</Button>
                       <Button tabIndex="5" animation={buttonsAnimation} index={4} onClick={togglePropertyOptions} >{"Cancel"}</Button>
                     </>
                       :
