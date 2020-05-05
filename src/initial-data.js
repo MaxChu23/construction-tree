@@ -2,20 +2,15 @@ const tree = [
   {
     id: 1,
     type: 'Project',
-    name: 'Wunderwaffe',
+    name: 'Burj Khalifa',
     expanded: false,
     properties: [
-      { id: 1, type: 'boolean', value: true, name: 'Hard' },
-      { id: 2, type: 'text', value: 'Coding project sfdds fsdf sdf sdf sdfs sfd sdf sdf sdf ', name: 'Type' },
-      {
-        id: 3,
-        type: 'list',
-        name: 'Furniture',
-        value: [
-          { id: 1, key: 'Chairs', value: 3 },
-          { id: 2, key: 'Tables', value: 1 },
-        ],
-      },
+      { id: 1, type: 'boolean', value: true, name: 'Tall' },
+      { id: 2, type: 'boolean', value: false, name: 'Easy' },
+      { id: 3, type: 'boolean', value: true, name: 'Expensive' },
+      { id: 4, type: 'text', value: 'UAE', name: 'Country' },
+      { id: 5, type: 'text', value: 'Dubai', name: 'City' },
+      { id: 6, type: 'text', value: 'Very tall building in Dubai.', name: 'Type' },
     ],
     items: [
       {
@@ -24,8 +19,8 @@ const tree = [
         name: '2',
         expanded: false,
         properties: [
-          { id: 1, type: 'boolean', value: 'no', name: 'Hard' },
-          { id: 2, type: 'text', value: 'It took him many many years', name: 'Type' },
+          { id: 1, type: 'boolean', value: true, name: 'Big' },
+          { id: 2, type: 'text', value: 'Platform B', name: 'Type' },
         ],
         items: [
           {

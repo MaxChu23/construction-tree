@@ -1,6 +1,7 @@
 @import url("https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap");
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -8,6 +9,8 @@ body {
   margin: 0;
   font-family: "Roboto", sans-serif;
   scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 *,

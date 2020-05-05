@@ -55,7 +55,7 @@ const Container = styled.div`
   }
 `
 
-function Tree({ initialData }) {
+const Tree = ({ initialData }) => {
   const [treeData, setTreeData] = useState(initialData || {})
   const [renaming, setRenaming] = useState(null)
 

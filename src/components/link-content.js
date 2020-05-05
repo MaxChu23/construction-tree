@@ -175,7 +175,7 @@ const Name = styled.div`
   padding: 2px 10px;
 `
 
-function LinkContent({ treeData, link, renaming, setRenaming, setTreeData, initialAnimation }) {
+const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initialAnimation }) => {
   const propBlurTimeout = useRef(null)
 
   const buttonsLauncherRef = useRef(null)
@@ -266,6 +266,23 @@ function LinkContent({ treeData, link, renaming, setRenaming, setTreeData, initi
     setTreeData(newTreeData)
     toggleShowContextMenu()
   }, [link.id, setTreeData, treeData, toggleShowContextMenu, showDeletePrompt])
+
+  const deleteLinkProp = useCallback(
+    propId => {
+      const newTreeData = [...treeData]
+
+      var newLink = findTreeLink({ items: newTreeData, id: link.id })
+      if (!newLink) return
+      var newLinkPropIndex = newLink.item.properties.findIndex(item => item.id === propId)
+      if (newLinkPropIndex === -1) return
+
+      newLink.item.properties.splice(newLinkPropIndex, 1)
+
+      setTreeData(newTreeData)
+      return newLink.item.properties[newLinkPropIndex]
+    },
+    [setTreeData, treeData, link]
+  )
 
   const handleExpand = useCallback(() => {
     const newTreeData = [...treeData]
@@ -418,7 +435,6 @@ function LinkContent({ treeData, link, renaming, setRenaming, setTreeData, initi
       const defaultValues = {
         text: '',
         boolean: false,
-        list: [],
       }
       const value = defaultValues[type]
       const prop = {
@@ -473,15 +489,12 @@ function LinkContent({ treeData, link, renaming, setRenaming, setTreeData, initi
     }, 50)
   }, [onOkButtonClick])
 
-  const onPropInputFocus = useCallback(
-    event => {
-      if (changingProperty.type === 'text' && !isTextSelected(event.currentTarget)) {
-        event.currentTarget.select()
-      }
-      clearTimeout(propBlurTimeout.current)
-    },
-    [changingProperty]
-  )
+  const onPropInputFocus = useCallback(event => {
+    if (event.currentTarget.tagName === 'INPUT' && !isTextSelected(event.currentTarget)) {
+      event.currentTarget.select()
+    }
+    clearTimeout(propBlurTimeout.current)
+  }, [])
 
   useEffect(() => {
     if (!selectedPropInput || !changingProperty || changingProperty.type !== 'text') return
@@ -542,6 +555,7 @@ function LinkContent({ treeData, link, renaming, setRenaming, setTreeData, initi
         {link.properties && link.properties.length > 0 && (
           <Properties
             changingProperty={changingProperty}
+            deleteLinkProp={deleteLinkProp}
             enablePropChanging={enablePropChanging}
             link={link}
             onPropChange={onPropChange}
@@ -550,6 +564,7 @@ function LinkContent({ treeData, link, renaming, setRenaming, setTreeData, initi
             onPropInputKeyDown={onPropInputKeyDown}
             propNameInputRef={propNameInputRef}
             propValueInputRef={propValueInputRef}
+            selectedPropInput={selectedPropInput}
           />
         )}
       </Content>

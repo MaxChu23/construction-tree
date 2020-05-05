@@ -3,7 +3,7 @@ import React from 'react'
 import TreePage from './pages/tree'
 import './App.css'
 
-function App() {
+const App = () => {
   return (
     <Layout>
       <TreePage />

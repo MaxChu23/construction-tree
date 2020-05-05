@@ -58,21 +58,16 @@ const ItemsContainer = styled.div`
   display: flex;
 `
 
-function Link({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRenaming, isFirst }) {
+const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRenaming, isFirst }) => {
   const [initialAnimation, setInitialAnimation] = useState(false)
 
   const animationTimer = useRef(null)
 
   useEffect(() => {
-    return () => {
-      clearTimeout(animationTimer.current)
-    }
-  }, [])
-
-  useEffect(() => {
     animationTimer.current = setTimeout(() => {
       setInitialAnimation(true)
     }, 50)
+    return () => clearTimeout(animationTimer.current)
   }, [])
 
   return (

@@ -58,7 +58,7 @@ const Button = styled.button`
   ${({ isRed }) => isRed && 'box-shadow: 0px 0px 10px rgba(255,150,150,0.5);'}
 `
 
-function ContextMenu({
+const ContextMenu = ({
   contextMenuPositionStyle,
   buttonsContainerRef,
   showPropertiesOptions,
@@ -72,7 +72,7 @@ function ContextMenu({
   deleteLink,
   toggleChangeType,
   toggleChangeName,
-}) {
+}) => {
   return (
     <Portal id="context-menu-portal">
       <ButtonsContainerPos style={contextMenuPositionStyle}>
@@ -96,15 +96,6 @@ function ContextMenu({
                 tabIndex="0"
               >
                 {'Boolean'}
-              </Button>
-              <Button
-                animation={buttonsAnimation}
-                data-prop-type="list"
-                index={3}
-                onClick={addPropAndChange}
-                tabIndex="0"
-              >
-                {'List'}
               </Button>
               <Button animation={buttonsAnimation} index={4} onClick={togglePropertyOptions} tabIndex="0">
                 {'Cancel'}

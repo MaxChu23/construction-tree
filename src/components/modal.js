@@ -32,7 +32,7 @@ const ModalContent = styled.div`
   display: flex;
 `
 
-function Modal({ open, setOpen }) {
+const Modal = ({ open, setOpen }) => {
   const closeModal = useCallback(() => {
     setOpen(false)
   }, [setOpen])
