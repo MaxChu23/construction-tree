@@ -1,6 +1,6 @@
+import Input from './input'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
-import Input from './input'
 
 const PropertiesContainer = styled.div`
   display: block;
@@ -79,69 +79,128 @@ const InputFiller = styled.span`
   max-width: 125px;
 `
 
-const PropsListContainer = styled.div`
+const PropsListContainer = styled.div``
 
-`
+const PropsListValue = styled.div``
 
-const PropsListValue = styled.div`
+function PropsList({ list }) {
+  return (
+    <PropsListContainer>
+      {list.map(item => (
+        <PropsListValue key={item.id}>{`- ${item.key}: ${item.value}`}</PropsListValue>
+      ))}
+    </PropsListContainer>
+  )
+}
 
-`
-
-const PropsList = ({list}) => {
-
-  return (  <PropsListContainer>
-    {list.map(item => (
-      <PropsListValue key={item.id} >{`- ${item.key}: ${item.value}`}</PropsListValue>
-    ))}
-  </PropsListContainer>
-)}
-
-const Property = ({ property, enablePropChanging, changingProperty, onPropInputFocus, onPropInputBlur, propNameInputRef, onPropInputKeyDown, onPropChange, propValueInputRef }) => {
-  const value = useMemo(() => property.type === 'boolean' ? (property.value ? 'Yes' : 'No') : property.value, [property])
+function Property({
+  property,
+  enablePropChanging,
+  changingProperty,
+  onPropInputFocus,
+  onPropInputBlur,
+  propNameInputRef,
+  onPropInputKeyDown,
+  onPropChange,
+  propValueInputRef,
+}) {
+  const value = useMemo(() => (property.type === 'boolean' ? (property.value ? 'Yes' : 'No') : property.value), [
+    property,
+  ])
 
   return (
-    <PropertyContainer draggable key={property.id} data-prop-id={property.id} onDoubleClick={enablePropChanging} >
-      <PropertyName data-prop-type="name" >
-      {changingProperty && changingProperty.id === property.id ?
-        <>
-          <InputFiller>{changingProperty.name || 'Key'}</InputFiller>
-          <PropInput autoFocus onFocus={onPropInputFocus} onBlur={onPropInputBlur} tabIndex="1" ref={propNameInputRef} placeholder="Key" data-prop-type="name" onKeyDown={onPropInputKeyDown} onChange={onPropChange} value={changingProperty.name} color={"#333"} />
-        </>
-        :
-        `${property.name}:`
-      }
+    <PropertyContainer data-prop-id={property.id} draggable key={property.id} onDoubleClick={enablePropChanging}>
+      <PropertyName data-prop-type="name">
+        {changingProperty && changingProperty.id === property.id ? (
+          <>
+            <InputFiller>{changingProperty.name || 'Key'}</InputFiller>
+            <PropInput
+              autoFocus
+              color="#333"
+              data-prop-type="name"
+              onBlur={onPropInputBlur}
+              onChange={onPropChange}
+              onFocus={onPropInputFocus}
+              onKeyDown={onPropInputKeyDown}
+              placeholder="Key"
+              ref={propNameInputRef}
+              tabIndex="0"
+              value={changingProperty.name}
+            />
+          </>
+        ) : (
+          `${property.name}:`
+        )}
       </PropertyName>
       <PropertyValue data-prop-type="value">
-        {changingProperty && changingProperty.id === property.id ?
+        {changingProperty && changingProperty.id === property.id ? (
           <>
             <InputFiller>{changingProperty.value || 'Value'}</InputFiller>
-            {
-              changingProperty.type === 'text' ?
-              <PropInput onFocus={onPropInputFocus} onBlur={onPropInputBlur} ref={propValueInputRef} tabIndex="2" placeholder="Value" data-prop-type="value" onKeyDown={onPropInputKeyDown} onChange={onPropChange} value={changingProperty.value} color={"#333"} />
-              :
-              <PropSelect onFocus={onPropInputFocus} onBlur={onPropInputBlur} ref={propValueInputRef} onChange={onPropChange} data-prop-type="value" value={changingProperty.value} tabIndex="2" >
-                <option value="true">Yes</option>
-                <option value="false">No</option>
+            {changingProperty.type === 'text' ? (
+              <PropInput
+                color="#333"
+                data-prop-type="value"
+                onBlur={onPropInputBlur}
+                onChange={onPropChange}
+                onFocus={onPropInputFocus}
+                onKeyDown={onPropInputKeyDown}
+                placeholder="Value"
+                ref={propValueInputRef}
+                tabIndex="0"
+                value={changingProperty.value}
+              />
+            ) : (
+              <PropSelect
+                data-prop-type="value"
+                onBlur={onPropInputBlur}
+                onChange={onPropChange}
+                onFocus={onPropInputFocus}
+                ref={propValueInputRef}
+                tabIndex="0"
+                value={changingProperty.value}
+              >
+                <option value="true">{'Yes'}</option>
+                <option value="false">{'No'}</option>
               </PropSelect>
-            }
+            )}
           </>
-           :
-           (property.type === 'list' ?
-           <PropsList list={property.value} />
-           :
-             value)}
+        ) : property.type === 'list' ? (
+          <PropsList list={property.value} />
+        ) : (
+          value
+        )}
       </PropertyValue>
     </PropertyContainer>
   )
 }
 
-const Properties = ({ link, changingProperty, enablePropChanging, onPropInputFocus, onPropInputBlur, propNameInputRef, propValueInputRef, onPropChange, onPropInputKeyDown }) => {
+function Properties({
+  link,
+  changingProperty,
+  enablePropChanging,
+  onPropInputFocus,
+  onPropInputBlur,
+  propNameInputRef,
+  propValueInputRef,
+  onPropChange,
+  onPropInputKeyDown,
+}) {
   return (
     <PropertiesContainer>
-    {link.properties.map(property => (
-        <Property key={property.id} property={property} enablePropChanging={enablePropChanging} changingProperty={changingProperty} onPropInputFocus={onPropInputFocus} onPropInputBlur={onPropInputBlur} propNameInputRef={propNameInputRef} onPropInputKeyDown={onPropInputKeyDown} onPropChange={onPropChange} propValueInputRef={propValueInputRef}></Property>
-      ))
-    }
+      {link.properties.map(property => (
+        <Property
+          changingProperty={changingProperty}
+          enablePropChanging={enablePropChanging}
+          key={property.id}
+          onPropChange={onPropChange}
+          onPropInputBlur={onPropInputBlur}
+          onPropInputFocus={onPropInputFocus}
+          onPropInputKeyDown={onPropInputKeyDown}
+          property={property}
+          propNameInputRef={propNameInputRef}
+          propValueInputRef={propValueInputRef}
+        />
+      ))}
     </PropertiesContainer>
   )
 }

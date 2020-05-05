@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react'
-import styled from 'styled-components'
 import LinkContent from './link-content'
+import React, { useEffect, useRef, useState } from 'react'
+import styled from 'styled-components'
 
 const Container = styled.div`
   display: flex;
@@ -9,15 +9,17 @@ const Container = styled.div`
   outline: none;
   position: relative;
 
-  opacity: ${({ initialAnimation }) => initialAnimation ? 1 : 0 };
-  transform: translateY(${({ initialAnimation }) => initialAnimation ? 0 : 10 }px);
+  opacity: ${({ initialAnimation }) => (initialAnimation ? 1 : 0)};
+  transform: translateY(${({ initialAnimation }) => (initialAnimation ? 0 : 10)}px);
   transition: all 0.3s;
 
   & + & {
-    ${({ isPrimary }) => !isPrimary ? 'margin-left: 10px;' : ''}
+    ${({ isPrimary }) => (!isPrimary ? 'margin-left: 10px;' : '')}
   }
 
-  ${({ isPrimary, isLast, isFirst, initialAnimation }) => !isPrimary && `
+  ${({ isPrimary, isLast, isFirst, initialAnimation }) =>
+    !isPrimary &&
+    `
     margin-top: 50px;
     &::before {
       content: '';
@@ -30,21 +32,25 @@ const Container = styled.div`
       transform: scaleY(${initialAnimation ? 1 : 0});
       transform-origin: top;
     }
-    ${!(isLast && isFirst) ? `
+    ${
+      !(isLast && isFirst)
+        ? `
 
       &::after {
         content: '';
         position: absolute;
         top: -20px;
-        left: ${isLast ? 0 : (!isFirst ? '0' : '50%')};
-        right: ${isLast ? '50%' : '-10px' };
+        left: ${isLast ? 0 : !isFirst ? '0' : '50%'};
+        right: ${isLast ? '50%' : '-10px'};
         height: 1px;
         background: #777;
         transition: transform 0.2s 0.2s linear;
         transform: scaleX(${initialAnimation ? 1 : 0});
-        transform-origin: ${isLast ? 'left' : 'right' };
+        transform-origin: ${isLast ? 'left' : 'right'};
       }
-      ` : ''}
+      `
+        : ''
+    }
   `}
 `
 
@@ -52,7 +58,7 @@ const ItemsContainer = styled.div`
   display: flex;
 `
 
-const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRenaming, isFirst }) => {
+function Link({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRenaming, isFirst }) {
   const [initialAnimation, setInitialAnimation] = useState(false)
 
   const animationTimer = useRef(null)
@@ -70,12 +76,29 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
   }, [])
 
   return (
-    <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary} >
-      <LinkContent renaming={renaming} setRenaming={setRenaming} link={link} treeData={treeData} setTreeData={setTreeData} initialAnimation={initialAnimation} />
+    <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary}>
+      <LinkContent
+        initialAnimation={initialAnimation}
+        link={link}
+        renaming={renaming}
+        setRenaming={setRenaming}
+        setTreeData={setTreeData}
+        treeData={treeData}
+      />
       <ItemsContainer>
-        {link.expanded && link.items.map((branch, branchIndex) => (
-          <Link isFirst={branchIndex === 0} isLast={branchIndex === link.items.length - 1} renaming={renaming} setRenaming={setRenaming} key={branch.id} link={branch} treeData={treeData} setTreeData={setTreeData} />
-        ))}
+        {link.expanded &&
+          link.items.map((branch, branchIndex) => (
+            <Link
+              isFirst={branchIndex === 0}
+              isLast={branchIndex === link.items.length - 1}
+              key={branch.id}
+              link={branch}
+              renaming={renaming}
+              setRenaming={setRenaming}
+              setTreeData={setTreeData}
+              treeData={treeData}
+            />
+          ))}
       </ItemsContainer>
     </Container>
   )

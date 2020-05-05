@@ -1,12 +1,14 @@
-import React from 'react'
-import './App.css'
-import TreePage from './pages/tree'
 import Layout from './layout'
+import React from 'react'
+import TreePage from './pages/tree'
+import './App.css'
 
-const App = () => (
-  <Layout>
-    <TreePage />
-  </Layout>
-)
+function App() {
+  return (
+    <Layout>
+      <TreePage />
+    </Layout>
+  )
+}
 
-export default App;
+export default App

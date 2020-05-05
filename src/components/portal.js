@@ -1,5 +1,5 @@
-import { createPortal } from 'react-dom'
 import usePortal from '../ext/use-portal'
+import { createPortal } from 'react-dom'
 
 /**
  * @example
@@ -8,11 +8,8 @@ import usePortal from '../ext/use-portal'
  * </Portal>
  */
 const Portal = ({ id, children }) => {
-  const target = usePortal(id);
-  return createPortal(
-    children,
-    target,
-  )
+  const target = usePortal(id)
+  return createPortal(children, target)
 }
 
 export default Portal

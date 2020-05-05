@@ -32,8 +32,7 @@ const ModalContent = styled.div`
   display: flex;
 `
 
-const Modal = ({ open, setOpen }) => {
-
+function Modal({ open, setOpen }) {
   const closeModal = useCallback(() => {
     setOpen(false)
   }, [setOpen])
@@ -44,9 +43,7 @@ const Modal = ({ open, setOpen }) => {
     <Container>
       <Backdrop onClick={closeModal} />
       <ModalWindow>
-        <ModalContent>
-          {"sdf"}
-        </ModalContent>
+        <ModalContent>{'sdf'}</ModalContent>
       </ModalWindow>
     </Container>
   )

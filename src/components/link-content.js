@@ -1,8 +1,8 @@
-import React, { useCallback, useRef, useMemo, useEffect, useState } from 'react'
-import styled from 'styled-components'
+import ContextMenu from './context-menu'
 import Input from './input'
 import Properties from './properties'
-import ContextMenu from './context-menu'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import styled from 'styled-components'
 import { findTreeLink, isTextSelected } from '../utils'
 
 const HasItemsIndicator = styled.div`
@@ -19,21 +19,24 @@ const HasItemsIndicator = styled.div`
     width: 14px;
     height: 14px;
     margin: 0 auto;
-    color: ${({ expanded }) => expanded ? '#777' : '#0bf'};
+    color: ${({ expanded }) => (expanded ? '#777' : '#0bf')};
     user-select: none;
     background: #fff;
     border-radius: 50%;
     text-align: center;
-    border: 1px solid ${({ expanded }) => expanded ? '#777' : 'rgba(100,200,255,0.5)'};
+    border: 1px solid ${({ expanded }) => (expanded ? '#777' : 'rgba(100,200,255,0.5)')};
 
     transition: 0.3s all;
 
-    ${({ expanded }) => !expanded && `box-shadow: 0px 0px 5px 1px rgba(100, 200, 255, 0.5);`}
+    ${({ expanded }) => !expanded && 'box-shadow: 0px 0px 5px 1px rgba(100, 200, 255, 0.5);'}
 
-    ${({ expanded }) => expanded ? `
+    ${({ expanded }) =>
+      expanded
+        ? `
       animation: 0.6s hasNoItems;
       animation-fill-mode: forwards;
-    ` : `
+    `
+        : `
       animation: 1.2s hasItemsAnimation infinite;
     `}
 
@@ -46,7 +49,7 @@ const HasItemsIndicator = styled.div`
       left: 50%;
       background: #777;
       transition: transform 0.3s;
-      transform: translateX(-50%) scale(${({ expanded }) => expanded ? 0 : 1});
+      transform: translateX(-50%) scale(${({ expanded }) => (expanded ? 0 : 1)});
     }
 
     &::after {
@@ -79,14 +82,18 @@ const ContentContainer = styled.div`
       transform-origin: top;
     }
   `}
-  ${({ showContextMenu }) => !showContextMenu ? `
+
+  ${({ showContextMenu }) =>
+    !showContextMenu
+      ? `
     &:hover {
       ${ButtonsLauncher} {
         transform: scale(1);
         opacity: 1;
       }
     }
-  ` : `${ButtonsLauncher} { transform: scale(1); opacity: 1; }`}
+  `
+      : `${ButtonsLauncher} { transform: scale(1); opacity: 1; }`}
 `
 
 const ButtonsLauncher = styled.div`
@@ -138,11 +145,11 @@ const Content = styled.div`
   overflow: hidden;
   background: #fff;
 
-  box-shadow: 0px 3px 6px rgba(0,0,0,0.3);
+  box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.3);
 `
 
 const TypeContainer = styled.div`
-  background: linear-gradient(-45deg,#88ffe4,#5874ff);
+  background: linear-gradient(-45deg, #88ffe4, #5874ff);
   width: 100%;
   text-align: center;
   border-bottom: 1px solid #333;
@@ -168,7 +175,7 @@ const Name = styled.div`
   padding: 2px 10px;
 `
 
-const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initialAnimation }) => {
+function LinkContent({ treeData, link, renaming, setRenaming, setTreeData, initialAnimation }) {
   const propBlurTimeout = useRef(null)
 
   const buttonsLauncherRef = useRef(null)
@@ -184,50 +191,56 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   const [selectedPropInput, setSelectedPropInput] = useState(null)
 
   const [showContextMenu, setShowContextMenu] = useState(false)
-  const renamingType = useMemo(() => renaming && (renaming.id === link.id && renaming.type), [link.id, renaming])
+  const renamingType = useMemo(() => renaming && renaming.id === link.id && renaming.type, [link.id, renaming])
 
   const [showDeletePrompt, setShowDeletePrompt] = useState(false)
   const [buttonsAnimation, setButtonsAnimation] = useState('hide')
   const [showPropertiesOptions, setShowPropertiesOptions] = useState(false)
   const [changingProperty, setChangingProperty] = useState(null)
 
-  const toggleShowContextMenu = useCallback(({ blur } = {}) => {
-    clearTimeout(contextMenuTimeout.current)
-    clearTimeout(contextMenuTimeout2.current)
+  const toggleShowContextMenu = useCallback(
+    ({ blur } = {}) => {
+      clearTimeout(contextMenuTimeout.current)
+      clearTimeout(contextMenuTimeout2.current)
 
-    contextMenuTimeout.current = setTimeout(() => {
-      if (blur) {
-        setShowContextMenu(false)
-        setShowPropertiesOptions(false)
-        return
-      }
-      setShowContextMenu(buttonsAnimation === 'hide')
-    }, blur || buttonsAnimation !== 'hide' ? 1000 : 10 )
+      contextMenuTimeout.current = setTimeout(
+        () => {
+          if (blur) {
+            setShowContextMenu(false)
+            setShowPropertiesOptions(false)
+            return
+          }
+          setShowContextMenu(buttonsAnimation === 'hide')
+        },
+        blur || buttonsAnimation !== 'hide' ? 1000 : 10
+      )
 
-    contextMenuTimeout2.current = setTimeout(() => {
-      setButtonsAnimation(buttonsAnimation === 'hide' ? 'show' : 'hide')
-    }, 50)
-  }, [buttonsAnimation, setShowContextMenu])
+      contextMenuTimeout2.current = setTimeout(() => {
+        setButtonsAnimation(buttonsAnimation === 'hide' ? 'show' : 'hide')
+      }, 50)
+    },
+    [buttonsAnimation, setShowContextMenu]
+  )
 
   const addLink = useCallback(() => {
-    const newTreeData = [ ...treeData ]
+    const newTreeData = [...treeData]
 
     var newLink = findTreeLink({ items: newTreeData, id: link.id })
     if (!newLink) return
 
     const obj = {
       id: newLink.item.id + '.' + newLink.item.items.length,
-      type: "",
-      name: "",
+      type: '',
+      name: '',
       expanded: false,
-      items: []
+      items: [],
     }
 
     newLink.item.items.push(obj)
-    newLink.item.expanded = true;
+    newLink.item.expanded = true
 
     setTreeData(newTreeData)
-    setRenaming({ id: obj.id, type: "type", value: "" })
+    setRenaming({ id: obj.id, type: 'type', value: '' })
     toggleShowContextMenu()
   }, [link.id, setTreeData, treeData, toggleShowContextMenu, setRenaming])
 
@@ -240,7 +253,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
       return
     }
 
-    const newTreeData = [ ...treeData ]
+    const newTreeData = [...treeData]
 
     var newLink = findTreeLink({ items: newTreeData, id: link.id })
     if (!newLink) return
@@ -255,7 +268,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   }, [link.id, setTreeData, treeData, toggleShowContextMenu, showDeletePrompt])
 
   const handleExpand = useCallback(() => {
-    const newTreeData = [ ...treeData ]
+    const newTreeData = [...treeData]
 
     const newLink = findTreeLink({ items: newTreeData, id: link.id })
     if (!newLink) return
@@ -265,74 +278,86 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
     setTreeData(newTreeData)
   }, [link.expanded, link.id, treeData, setTreeData])
 
-  const renameLink = useCallback(event => {
-    const value = event.target.value
+  const renameLink = useCallback(
+    event => {
+      const value = event.target.value
 
-    const newTreeData = [ ...treeData ]
+      const newTreeData = [...treeData]
 
-    var newLink = findTreeLink({ items: newTreeData, id: link.id })
-    if (!newLink || !renaming) return
+      var newLink = findTreeLink({ items: newTreeData, id: link.id })
+      if (!newLink || !renaming) return
 
-    newLink.item[renaming.type] = value
+      newLink.item[renaming.type] = value
 
-    setRenaming(link.name === '' ? {id: link.id, type: "name", value: ""} : null )
-    setTreeData(newTreeData)
-  }, [renaming, link, treeData, setTreeData, setRenaming])
+      setRenaming(link.name === '' ? { id: link.id, type: 'name', value: '' } : null)
+      setTreeData(newTreeData)
+    },
+    [renaming, link, treeData, setTreeData, setRenaming]
+  )
 
-  const addLinkProp = useCallback(prop => {
-    const newTreeData = [ ...treeData ]
+  const addLinkProp = useCallback(
+    prop => {
+      const newTreeData = [...treeData]
 
-    var newLink = findTreeLink({ items: newTreeData, id: link.id })
-    if (!newLink) return
+      var newLink = findTreeLink({ items: newTreeData, id: link.id })
+      if (!newLink) return
 
-    const newLinkProp = {...prop}
-    const props = newLink.item.properties || []
+      const newLinkProp = { ...prop }
+      const props = newLink.item.properties || []
 
-    newLinkProp.id = props.length + 1
+      newLinkProp.id = props.length + 1
 
-    // TODO: desctruct the object first!
-    newLink.item.properties = [...props, newLinkProp]
+      // TODO: desctruct the object first!
+      newLink.item.properties = [...props, newLinkProp]
 
-    setTreeData(newTreeData)
-    return newLinkProp
-  }, [link, treeData, setTreeData])
+      setTreeData(newTreeData)
+      return newLinkProp
+    },
+    [link, treeData, setTreeData]
+  )
 
-  const updateLinkProp = useCallback(prop => {
-    const newTreeData = [ ...treeData ]
-    const propData = { ...prop }
+  const updateLinkProp = useCallback(
+    prop => {
+      const newTreeData = [...treeData]
+      const propData = { ...prop }
 
-    var newLink = findTreeLink({ items: newTreeData, id: link.id })
-    if (!newLink) return
-    var newLinkPropIndex = newLink.item.properties.findIndex(item => item.id === propData.id)
-    if (newLinkPropIndex === -1) return
+      var newLink = findTreeLink({ items: newTreeData, id: link.id })
+      if (!newLink) return
+      var newLinkPropIndex = newLink.item.properties.findIndex(item => item.id === propData.id)
+      if (newLinkPropIndex === -1) return
 
-    if (prop.name === '' && prop.value === '') {
-      newLink.item.properties.splice(newLinkPropIndex, 1)
-    } else {
-      propData.value = propData.type === 'boolean' ? propData.value === 'true' || propData.value === true : propData.value
-      newLink.item.properties[newLinkPropIndex] = { ...newLink.item.properties[newLinkPropIndex], ...propData }
-    }
+      if (prop.name === '' && prop.value === '') {
+        newLink.item.properties.splice(newLinkPropIndex, 1)
+      } else {
+        propData.value =
+          propData.type === 'boolean' ? propData.value === 'true' || propData.value === true : propData.value
+        newLink.item.properties[newLinkPropIndex] = { ...newLink.item.properties[newLinkPropIndex], ...propData }
+      }
 
-
-    setTreeData(newTreeData)
-    return newLink.item.properties[newLinkPropIndex]
-  }, [link, treeData, setTreeData])
+      setTreeData(newTreeData)
+      return newLink.item.properties[newLinkPropIndex]
+    },
+    [link, treeData, setTreeData]
+  )
 
   const toggleChangeName = useCallback(() => {
-    setRenaming({ id: link.id, type: "name", value: link.name })
+    setRenaming({ id: link.id, type: 'name', value: link.name })
   }, [setRenaming, link.id, link.name])
 
   const toggleChangeType = useCallback(() => {
-    setRenaming({ id: link.id, type: "type", value: link.type })
+    setRenaming({ id: link.id, type: 'type', value: link.type })
   }, [setRenaming, link.id, link.type])
 
-  const onInputKeyDown = useCallback(event => {
-    if (event.key === 'Enter') {
-      renameLink(event)
-    }
-  }, [renameLink])
+  const onInputKeyDown = useCallback(
+    event => {
+      if (event.key === 'Enter') {
+        renameLink(event)
+      }
+    },
+    [renameLink]
+  )
 
-  const onBlur = useCallback((e) => {
+  const onBlur = useCallback(() => {
     blurTimeoutRef.current = setTimeout(() => {
       toggleShowContextMenu({ blur: true })
     }, 100)
@@ -342,9 +367,12 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
     clearTimeout(blurTimeoutRef.current)
   }, [])
 
-  const onInputChange = useCallback(event => {
-    setRenaming({ ...renaming, value: event.target.value })
-  }, [renaming, setRenaming])
+  const onInputChange = useCallback(
+    event => {
+      setRenaming({ ...renaming, value: event.target.value })
+    },
+    [renaming, setRenaming]
+  )
 
   const togglePropertyOptions = useCallback(() => {
     // Add prop
@@ -382,66 +410,81 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
     return result
   }, [showContextMenu])
 
-  const addPropAndChange = useCallback(event => {
-    onBlur()
+  const addPropAndChange = useCallback(
+    event => {
+      onBlur()
 
-    const type = event.target.getAttribute('data-prop-type')
-    const defaultValues = {
-      text: '',
-      boolean: false,
-      list: []
-    }
-    const value = defaultValues[type]
-    const prop = {
-      type,
-      name: '',
-      value,
-    }
-    const newProp = addLinkProp(prop)
-    setChangingProperty(newProp)
-  }, [onBlur, addLinkProp])
+      const type = event.target.getAttribute('data-prop-type')
+      const defaultValues = {
+        text: '',
+        boolean: false,
+        list: [],
+      }
+      const value = defaultValues[type]
+      const prop = {
+        type,
+        name: '',
+        value,
+      }
+      const newProp = addLinkProp(prop)
+      setChangingProperty(newProp)
+    },
+    [onBlur, addLinkProp]
+  )
 
   const onOkButtonClick = useCallback(() => {
     updateLinkProp(changingProperty)
     setChangingProperty(null)
   }, [changingProperty, updateLinkProp])
 
-  const onPropInputKeyDown = useCallback(event => {
-    if (event.key === 'Enter') {
-      onOkButtonClick()
-    }
-  }, [onOkButtonClick])
+  const onPropInputKeyDown = useCallback(
+    event => {
+      if (event.key === 'Enter') {
+        onOkButtonClick()
+      }
+    },
+    [onOkButtonClick]
+  )
 
-  const onPropChange = useCallback(event => {
-    const type = event.target.getAttribute('data-prop-type')
-    setChangingProperty({ ...changingProperty, [type]: event.target.value })
-  }, [changingProperty])
+  const onPropChange = useCallback(
+    event => {
+      const type = event.target.getAttribute('data-prop-type')
+      setChangingProperty({ ...changingProperty, [type]: event.target.value })
+    },
+    [changingProperty]
+  )
 
-  const enablePropChanging = useCallback(event => {
-    const propId = event.currentTarget.getAttribute('data-prop-id')
-    if (!propId) return
-    setChangingProperty(link.properties.find(prop => prop.id === +propId))
-    const type = event.target.getAttribute('data-prop-type')
-    if (type) {
-      setSelectedPropInput(type)
-    }
-  }, [link])
+  const enablePropChanging = useCallback(
+    event => {
+      const propId = event.currentTarget.getAttribute('data-prop-id')
+      if (!propId) return
+      setChangingProperty(link.properties.find(prop => prop.id === +propId))
+      const type = event.target.getAttribute('data-prop-type')
+      if (type) {
+        setSelectedPropInput(type)
+      }
+    },
+    [link]
+  )
 
-  const onPropInputBlur = useCallback(event => {
+  const onPropInputBlur = useCallback(() => {
     propBlurTimeout.current = setTimeout(() => {
       onOkButtonClick()
     }, 50)
   }, [onOkButtonClick])
 
-  const onPropInputFocus = useCallback(event => {
-    if (changingProperty.type === 'text' && !isTextSelected(event.currentTarget)) {
-      event.currentTarget.select()
-    }
-    clearTimeout(propBlurTimeout.current)
-  }, [changingProperty])
+  const onPropInputFocus = useCallback(
+    event => {
+      if (changingProperty.type === 'text' && !isTextSelected(event.currentTarget)) {
+        event.currentTarget.select()
+      }
+      clearTimeout(propBlurTimeout.current)
+    },
+    [changingProperty]
+  )
 
   useEffect(() => {
-    if (!selectedPropInput || (!changingProperty || changingProperty.type !== 'text')) return
+    if (!selectedPropInput || !changingProperty || changingProperty.type !== 'text') return
     if (selectedPropInput === 'name') {
       propNameInputRef.current.select()
     } else {
@@ -460,29 +503,81 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   }, [])
 
   return (
-  <ContentContainer showContextMenu={showContextMenu} expanded={initialAnimation && link.expanded && link.items.length > 1} >
-    <Content draggable>
-      <TypeContainer onDoubleClick={toggleChangeType} >
-        {renamingType === "type" ? <Input tabIndex="1" onKeyDown={onInputKeyDown} autoFocus data-rename="type" onChange={onInputChange} onBlur={renameLink} value={renaming.value} color={"#fff"} /> : <Type>{link.type}</Type>}
-      </TypeContainer>
-      {renamingType === "name" ? <Input tabIndex="1" onKeyDown={onInputKeyDown} autoFocus data-rename="name" onChange={onInputChange} onBlur={renameLink} value={renaming.value} type="name" color={"#333"} /> : <Name onDoubleClick={toggleChangeName}>{link.name}</Name>}
-      {link.properties && link.properties.length > 0 &&
-        <Properties link={link} changingProperty={changingProperty} enablePropChanging={enablePropChanging} onPropInputFocus={onPropInputFocus} onPropInputBlur={onPropInputBlur} propNameInputRef={propNameInputRef} propValueInputRef={propValueInputRef} onPropChange={onPropChange} onPropInputKeyDown={onPropInputKeyDown}></Properties>
-      }
-    </Content>
-      <ButtonsLauncher ref={buttonsLauncherRef} onClick={toggleShowContextMenu} />
-      {showContextMenu &&
-        <ContextMenu contextMenuPositionStyle={contextMenuPositionStyle} buttonsContainerRef={buttonsContainerRef} showPropertiesOptions={showPropertiesOptions} onFocus={onFocus} onBlur={onBlur} addPropAndChange={addPropAndChange} buttonsAnimation={buttonsAnimation} togglePropertyOptions={togglePropertyOptions} addLink={addLink} showDeletePrompt={showDeletePrompt} deleteLink={deleteLink} toggleChangeType={toggleChangeType} toggleChangeName={toggleChangeName}/>
-      }
-    {
-      link.items.length > 0 &&
-      (
-        <HasItemsIndicator expanded={link.expanded} onClick={handleExpand} >
+    <ContentContainer
+      expanded={initialAnimation && link.expanded && link.items.length > 1}
+      showContextMenu={showContextMenu}
+    >
+      <Content draggable>
+        <TypeContainer onDoubleClick={toggleChangeType}>
+          {renamingType === 'type' ? (
+            <Input
+              autoFocus
+              color="#fff"
+              data-rename="type"
+              onBlur={renameLink}
+              onChange={onInputChange}
+              onKeyDown={onInputKeyDown}
+              tabIndex="0"
+              value={renaming.value}
+            />
+          ) : (
+            <Type>{link.type}</Type>
+          )}
+        </TypeContainer>
+        {renamingType === 'name' ? (
+          <Input
+            autoFocus
+            color="#333"
+            data-rename="name"
+            onBlur={renameLink}
+            onChange={onInputChange}
+            onKeyDown={onInputKeyDown}
+            tabIndex="0"
+            type="name"
+            value={renaming.value}
+          />
+        ) : (
+          <Name onDoubleClick={toggleChangeName}>{link.name}</Name>
+        )}
+        {link.properties && link.properties.length > 0 && (
+          <Properties
+            changingProperty={changingProperty}
+            enablePropChanging={enablePropChanging}
+            link={link}
+            onPropChange={onPropChange}
+            onPropInputBlur={onPropInputBlur}
+            onPropInputFocus={onPropInputFocus}
+            onPropInputKeyDown={onPropInputKeyDown}
+            propNameInputRef={propNameInputRef}
+            propValueInputRef={propValueInputRef}
+          />
+        )}
+      </Content>
+      <ButtonsLauncher onClick={toggleShowContextMenu} ref={buttonsLauncherRef} />
+      {showContextMenu && (
+        <ContextMenu
+          addLink={addLink}
+          addPropAndChange={addPropAndChange}
+          buttonsAnimation={buttonsAnimation}
+          buttonsContainerRef={buttonsContainerRef}
+          contextMenuPositionStyle={contextMenuPositionStyle}
+          deleteLink={deleteLink}
+          onBlur={onBlur}
+          onFocus={onFocus}
+          showDeletePrompt={showDeletePrompt}
+          showPropertiesOptions={showPropertiesOptions}
+          toggleChangeName={toggleChangeName}
+          toggleChangeType={toggleChangeType}
+          togglePropertyOptions={togglePropertyOptions}
+        />
+      )}
+      {link.items.length > 0 && (
+        <HasItemsIndicator expanded={link.expanded} onClick={handleExpand}>
           <span />
         </HasItemsIndicator>
-      )
-    }
-  </ContentContainer>
-)}
+      )}
+    </ContentContainer>
+  )
+}
 
 export default LinkContent

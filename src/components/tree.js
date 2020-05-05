@@ -1,6 +1,6 @@
+import Link from './link'
 import React, { useState } from 'react'
 import styled from 'styled-components'
-import Link from './link'
 
 const Container = styled.div`
   width: 100%;
@@ -55,14 +55,22 @@ const Container = styled.div`
   }
 `
 
-const Tree = ({ initialData }) => {
+function Tree({ initialData }) {
   const [treeData, setTreeData] = useState(initialData || {})
   const [renaming, setRenaming] = useState(null)
 
-  return(
+  return (
     <Container>
       {treeData.map(branch => (
-        <Link isPrimary renaming={renaming} setRenaming={setRenaming} setTreeData={setTreeData} treeData={treeData} link={branch} key={branch.id} ></Link>
+        <Link
+          isPrimary
+          key={branch.id}
+          link={branch}
+          renaming={renaming}
+          setRenaming={setRenaming}
+          setTreeData={setTreeData}
+          treeData={treeData}
+        />
       ))}
     </Container>
   )

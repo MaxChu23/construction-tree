@@ -1,14 +1,14 @@
 // Source: https://www.jayfreestone.com/writing/react-portals-with-hooks/
-import { useRef, useEffect } from 'react';
+import { useEffect, useRef } from 'react'
 
 /**
  * Creates DOM element to be used as React root.
  * @returns {HTMLElement}
  */
 function createRootElement(id) {
-  const rootContainer = document.createElement('div');
-  rootContainer.setAttribute('id', id);
-  return rootContainer;
+  const rootContainer = document.createElement('div')
+  rootContainer.setAttribute('id', id)
+  return rootContainer
 }
 
 /**
@@ -16,10 +16,7 @@ function createRootElement(id) {
  * @param {HTMLElement} rootElem
  */
 function addRootElement(rootElem) {
-  document.body.insertBefore(
-    rootElem,
-    document.body.lastElementChild.nextElementSibling,
-  );
+  document.body.insertBefore(rootElem, document.body.lastElementChild.nextElementSibling)
 }
 
 /**
@@ -34,29 +31,32 @@ function addRootElement(rootElem) {
  * @returns {HTMLElement} The DOM node to use as the Portal target.
  */
 function usePortal(id) {
-  const rootElemRef = useRef(null);
+  const rootElemRef = useRef(null)
 
-  useEffect(function setupElement() {
-    // Look for existing target dom element to append to
-    const existingParent = document.querySelector(`#${id}`);
-    // Parent is either a new root or the existing dom element
-    const parentElem = existingParent || createRootElement(id);
+  useEffect(
+    function setupElement() {
+      // Look for existing target dom element to append to
+      const existingParent = document.querySelector(`#${id}`)
+      // Parent is either a new root or the existing dom element
+      const parentElem = existingParent || createRootElement(id)
 
-    // If there is no existing DOM element, add a new one.
-    if (!existingParent) {
-      addRootElement(parentElem);
-    }
-
-    // Add the detached element to the parent
-    parentElem.appendChild(rootElemRef.current);
-
-    return function removeElement() {
-      rootElemRef.current.remove();
-      if (parentElem.childNodes.length === -1) {
-        parentElem.remove();
+      // If there is no existing DOM element, add a new one.
+      if (!existingParent) {
+        addRootElement(parentElem)
       }
-    };
-  }, [id]);
+
+      // Add the detached element to the parent
+      parentElem.appendChild(rootElemRef.current)
+
+      return function removeElement() {
+        rootElemRef.current.remove()
+        if (parentElem.childNodes.length === -1) {
+          parentElem.remove()
+        }
+      }
+    },
+    [id]
+  )
 
   /**
    * It's important we evaluate this lazily:
@@ -70,12 +70,12 @@ function usePortal(id) {
    */
   function getRootElem() {
     if (!rootElemRef.current) {
-      rootElemRef.current = document.createElement('div');
+      rootElemRef.current = document.createElement('div')
     }
-    return rootElemRef.current;
+    return rootElemRef.current
   }
 
-  return getRootElem();
+  return getRootElem()
 }
 
-export default usePortal;
+export default usePortal

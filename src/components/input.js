@@ -11,11 +11,11 @@ const Input = styled.input`
   font-size: 14px;
 
   font-weight: 700;
-  color: ${({ color }) => color };
+  color: ${({ color }) => color};
 
   background: transparent;
 
-  &[data-rename="type"] {
+  &[data-rename='type'] {
     text-transform: uppercase;
     font-size: 12px;
   }
