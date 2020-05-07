@@ -170,7 +170,7 @@ const Property = ({
   ])
 
   return (
-    <PropertyContainer data-prop-id={property.id} draggable key={property.id} onDoubleClick={enablePropChanging}>
+    <PropertyContainer data-prop-id={property.id} key={property.id} onDoubleClick={enablePropChanging}>
       <DeleteButton onClick={onDeleteButtonClick} showConfirmation={showConfirmation}>
         {showConfirmation ? '?' : <span />}
       </DeleteButton>

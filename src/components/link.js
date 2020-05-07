@@ -1,6 +1,8 @@
 import LinkContent from './link-content'
 import React, { useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
+import { findItem } from '../utils'
+import { useDrag, useDrop } from 'react-dnd'
 
 const Container = styled.div`
   display: flex;
@@ -58,7 +60,26 @@ const ItemsContainer = styled.div`
   display: flex;
 `
 
-const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRenaming, isFirst }) => {
+const CCs = styled.div`
+  display: flex;
+`
+
+const moveKnight = res => {
+  console.log('res', res)
+}
+
+const Link = ({
+  link,
+  treeData,
+  setTreeData,
+  isPrimary,
+  isLast,
+  renaming,
+  setRenaming,
+  isFirst,
+  moveItem,
+  parentId,
+}) => {
   const [initialAnimation, setInitialAnimation] = useState(false)
 
   const animationTimer = useRef(null)
@@ -70,16 +91,64 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
     return () => clearTimeout(animationTimer.current)
   }, [])
 
+  const [{}, dropRef] = useDrop({
+    accept: 'item',
+    canDrop: false,
+    hover: (draggedItem, monitor) => {
+      if (draggedItem.id === link.id || draggedItem.id === parentId) return
+      if (!monitor.isOver({ shallow: true })) return
+
+      moveItem(draggedItem.id, link.id, parentId)
+    },
+  })
+
+  const [{ isDragging }, dragRef] = useDrag({
+    item: {
+      id: link.id,
+      parentId,
+      items: link.items,
+      type: 'item',
+    },
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging() && link.id === monitor.getItem().id,
+    }),
+    // isDragging: monitor => link.id == monitor.getItem().id,
+  })
+
+  const [{}, drop2Ref] = useDrop({
+    accept: 'item',
+    hover: (draggedItem, monitor) => {
+      if (!monitor.isOver({ shallow: true })) return
+
+      const descendantNode = findItem(parentId, draggedItem.items)
+      if (descendantNode) return
+      if (draggedItem.parentId == parentId || draggedItem.id == parentId) return
+
+      moveItem(draggedItem.id, undefined, parentId)
+    },
+  })
+
   return (
-    <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary}>
-      <LinkContent
-        initialAnimation={initialAnimation}
-        link={link}
-        renaming={renaming}
-        setRenaming={setRenaming}
-        setTreeData={setTreeData}
-        treeData={treeData}
-      />
+    <Container
+      initialAnimation={initialAnimation}
+      isFirst={isFirst}
+      isLast={isLast}
+      isPrimary={isPrimary}
+      ref={dragRef}
+      style={{ opacity: isDragging ? 0.3 : 1 }}
+    >
+      <CCs ref={drop2Ref}>
+        <div ref={dropRef}>
+          <LinkContent
+            initialAnimation={initialAnimation}
+            link={link}
+            renaming={renaming}
+            setRenaming={setRenaming}
+            setTreeData={setTreeData}
+            treeData={treeData}
+          />
+        </div>
+      </CCs>
       <ItemsContainer>
         {link.expanded &&
           link.items.map((branch, branchIndex) => (
@@ -88,6 +157,8 @@ const Link = ({ link, treeData, setTreeData, isPrimary, isLast, renaming, setRen
               isLast={branchIndex === link.items.length - 1}
               key={branch.id}
               link={branch}
+              moveItem={moveItem}
+              parentId={link.id}
               renaming={renaming}
               setRenaming={setRenaming}
               setTreeData={setTreeData}

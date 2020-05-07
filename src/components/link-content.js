@@ -520,7 +520,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
       expanded={initialAnimation && link.expanded && link.items.length > 1}
       showContextMenu={showContextMenu}
     >
-      <Content draggable>
+      <Content>
         <TypeContainer onDoubleClick={toggleChangeType}>
           {renamingType === 'type' ? (
             <Input

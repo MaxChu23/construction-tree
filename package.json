@@ -8,6 +8,8 @@
     "@testing-library/user-event": "^7.1.2",
     "lodash": "^4.17.15",
     "react": "^16.13.1",
+    "react-dnd": "^10.0.2",
+    "react-dnd-html5-backend": "^10.0.2",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
     "styled-components": "^5.1.0"
