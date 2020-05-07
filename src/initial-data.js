@@ -93,7 +93,7 @@ const tree = [
           {
             id: 12,
             type: 'Room',
-            name: 'III Reicht',
+            name: '203',
             expanded: false,
             items: [],
           },

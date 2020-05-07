@@ -1,6 +1,7 @@
 import Input from './input'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
+import { useDrag, useDrop } from 'react-dnd'
 
 const DeleteButton = styled.button`
   -webkit-appearance: none;
@@ -68,6 +69,7 @@ const PropertyContainer = styled.div`
   position: relative;
   width: 100%;
   min-height: 18px;
+  border: 1px solid #fb0;
 
   &:hover {
     ${DeleteButton} span {
@@ -136,6 +138,7 @@ const InputFiller = styled.span`
 `
 
 const Property = ({
+  index,
   property,
   enablePropChanging,
   changingProperty,
@@ -147,9 +150,63 @@ const Property = ({
   propValueInputRef,
   selectedPropInput,
   deleteLinkProp,
+  moveProp,
 }) => {
   const confirmationTimeout = useRef(null)
+  const ref = useRef(null)
+
   const [showConfirmation, setShowConfirmation] = useState(false)
+
+  const [{ isDragging }, dragRef] = useDrag({
+    item: {
+      id: property.id,
+      index,
+      type: 'prop',
+    },
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging(),
+    }),
+  })
+
+  const [, dropRef] = useDrop({
+    accept: 'prop',
+    hover(item, monitor) {
+      if (!ref.current) {
+        return
+      }
+      const dragIndex = item.id
+      const hoverIndex = index
+      if (dragIndex === hoverIndex) {
+        return
+      }
+
+      const hoverBoundingRect = ref.current.getBoundingClientRect()
+
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2
+
+      const clientOffset = monitor.getClientOffset()
+
+      const hoverClientY = clientOffset.y - hoverBoundingRect.top
+      // Only perform the move when the mouse has crossed half of the items height
+      // When dragging downwards, only move when the cursor is below 50%
+      // When dragging upwards, only move when the cursor is above 50%
+      // Dragging downwards
+      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
+        return
+      }
+      // Dragging upwards
+      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
+        return
+      }
+      // Time to actually perform the action
+      moveProp(dragIndex, hoverIndex)
+      // Note: we're mutating the monitor item here!
+      // Generally it's better to avoid mutations,
+      // but it's good here for the sake of performance
+      // to avoid expensive index searches.
+      item.index = hoverIndex
+    },
+  })
 
   const onDeleteButtonClick = useCallback(() => {
     clearTimeout(confirmationTimeout.current)
@@ -169,8 +226,18 @@ const Property = ({
     property,
   ])
 
+  dragRef(dropRef(ref))
+
+  const opacity = isDragging ? 0 : 1
+
   return (
-    <PropertyContainer data-prop-id={property.id} key={property.id} onDoubleClick={enablePropChanging}>
+    <PropertyContainer
+      data-prop-id={property.id}
+      key={property.id}
+      onDoubleClick={enablePropChanging}
+      ref={ref}
+      style={{ opacity }}
+    >
       <DeleteButton onClick={onDeleteButtonClick} showConfirmation={showConfirmation}>
         {showConfirmation ? '?' : <span />}
       </DeleteButton>

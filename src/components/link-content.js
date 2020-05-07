@@ -313,7 +313,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   )
 
   const addLinkProp = useCallback(
-    prop => {
+    (prop, index) => {
       const newTreeData = [...treeData]
 
       var newLink = findTreeLink({ items: newTreeData, id: link.id })
@@ -322,10 +322,16 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
       const newLinkProp = { ...prop }
       const props = newLink.item.properties || []
 
-      newLinkProp.id = props.length + 1
+      if (!newLinkProp.id) {
+        newLinkProp.id = props.length + 1
+      }
 
       // TODO: desctruct the object first!
-      newLink.item.properties = [...props, newLinkProp]
+      if (index) {
+        newLink.item.properties.splice(index, 0, newLinkProp)
+      } else {
+        newLink.item.properties = [...props, newLinkProp]
+      }
 
       setTreeData(newTreeData)
       return newLinkProp
@@ -554,6 +560,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
         )}
         {link.properties && link.properties.length > 0 && (
           <Properties
+            addLinkProp={addLinkProp}
             changingProperty={changingProperty}
             deleteLinkProp={deleteLinkProp}
             enablePropChanging={enablePropChanging}
