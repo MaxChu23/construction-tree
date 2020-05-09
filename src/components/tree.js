@@ -1,7 +1,7 @@
 import Link from './link'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { findItem, removeNode } from '../utils'
+import { findTreeLink, sortLink } from '../utils'
 
 const Container = styled.div`
   width: 100%;
@@ -60,28 +60,15 @@ const Tree = ({ initialData }) => {
   const [treeData, setTreeData] = useState(initialData || {})
   const [renaming, setRenaming] = useState(null)
 
+  const moveItemTimer = useRef(null)
+
   const moveItem = useCallback(
     (id, afterId, nodeId) => {
       if (id === afterId) return
-      const newTreeData = [...treeData]
-
-      const item = { ...findItem(id, newTreeData) }
-      if (!item.id) {
-        return
-      }
-
-      const destination = nodeId ? findItem(nodeId, newTreeData).items : newTreeData
-
-      if (!afterId) {
-        removeNode(id, newTreeData)
-        destination.push(item)
-      } else {
-        const index = destination.indexOf(destination.filter(destinationItem => destinationItem.id == afterId).shift())
-        removeNode(id, newTreeData)
-        destination.splice(index, 0, item)
-      }
-
+      const link = findTreeLink({ items: treeData, id }).item
+      const newTreeData = sortLink(treeData, link, afterId, nodeId)
       setTreeData(newTreeData)
+      moveItemTimer.current = null
     },
     [treeData]
   )

@@ -79,14 +79,14 @@ const ItemsContainer = styled.div`
 `
 
 const ItemsTree = ({ link, moveItem, renaming, setRenaming, treeData, setTreeData, parentId }) => {
-  const [{}, dropRef] = useDrop({
+  const [, dropRef] = useDrop({
     accept: 'item',
     hover: (draggedItem, monitor) => {
       if (!monitor.isOver({ shallow: true })) return
 
       const descendantNode = findItem(parentId, draggedItem.items)
       if (descendantNode) return
-      if (draggedItem.parentId == parentId || draggedItem.id == parentId) return
+      if (draggedItem.parentId === parentId || draggedItem.id === parentId) return
 
       moveItem(draggedItem.id, undefined, parentId)
     },
@@ -124,6 +124,7 @@ const Link = ({
   isFirst,
   moveItem,
   parentId,
+  moveProp,
 }) => {
   const [initialAnimation, setInitialAnimation] = useState(false)
 
@@ -147,7 +148,7 @@ const Link = ({
     },
   })
 
-  const [, dragRef] = useDrag({
+  const [{ isDragging }, dragRef] = useDrag({
     item: {
       id: link.id,
       parentId,
@@ -155,17 +156,25 @@ const Link = ({
       type: 'item',
     },
     collect: monitor => ({
-      isDragging: !!monitor.isDragging() && link.id === monitor.getItem().id,
+      isDragging: monitor.isDragging() && link.id === monitor.getItem().id,
     }),
   })
 
   return (
-    <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary}>
+    <Container
+      initialAnimation={initialAnimation}
+      isFirst={isFirst}
+      isLast={isLast}
+      isPrimary={isPrimary}
+      style={{ opacity: isDragging ? 0.3 : 1 }}
+    >
+      {link.id}
       <ContainerPos isFirst={isFirst} isPrimary={isPrimary} ref={dropRef}>
         <div ref={dragRef}>
           <LinkContent
             initialAnimation={initialAnimation}
             link={link}
+            moveProp={moveProp}
             renaming={renaming}
             setRenaming={setRenaming}
             setTreeData={setTreeData}

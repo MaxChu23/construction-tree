@@ -1,5 +1,5 @@
 import Property from './property'
-import React, { useCallback } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 
 const PropertiesContainer = styled.div`
@@ -23,23 +23,8 @@ let Properties = ({
   onPropInputKeyDown,
   selectedPropInput,
   deleteLinkProp,
-  addLinkProp,
+  moveProp,
 }) => {
-  const moveProp = useCallback(
-    (dragIndex, hoverIndex) => {
-      const dragProp = link.properties.find(item => item.id === dragIndex)
-
-      if (!dragProp) return
-
-      // splice at dragIndex, 1
-      // splice hoverIndex, 0, dragProp
-      deleteLinkProp(dragProp.id)
-      // console.log(hoverIndex)
-      // addLinkProp(dragProp, hoverIndex)
-    },
-    [addLinkProp, link, deleteLinkProp]
-  )
-
   return (
     <PropertiesContainer>
       {link.properties.map((property, index) => (

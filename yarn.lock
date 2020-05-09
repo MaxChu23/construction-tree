@@ -4621,6 +4621,11 @@ flatten@^1.0.2:
   resolved "https://registry.yarnpkg.com/flatten/-/flatten-1.0.3.tgz#c1283ac9f27b368abc1e36d1ff7b04501a30356b"
   integrity sha512-dVsPA/UwQ8+2uoFe5GHtiBMu48dWLTdsuEd7CKGlZlD78r1TTWBvDuFaFGKCo/ZfEr95Uk56vZoX86OsHkUeIg==
 
+flatulence@^0.2.13:
+  version "0.2.13"
+  resolved "https://registry.yarnpkg.com/flatulence/-/flatulence-0.2.13.tgz#411e370abaf185a31995b34fade42e0dd08a7e76"
+  integrity sha1-QR43CrrxhaMZlbNPreQuDdCKfnY=
+
 flush-write-stream@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/flush-write-stream/-/flush-write-stream-1.1.1.tgz#8dd7d873a1babc207d94ead0c2e0e44276ebf2e8"
@@ -5253,6 +5258,13 @@ immer@1.10.0:
   version "1.10.0"
   resolved "https://registry.yarnpkg.com/immer/-/immer-1.10.0.tgz#bad67605ba9c810275d91e1c2a47d4582e98286d"
   integrity sha512-O3sR1/opvCDGLEVcvrGTMtLac8GJ5IwZC4puPrLuRj3l7ICKvkmA0vGuU9OW8mV9WIBRnaxp5GJh9IEAaNOoYg==
+
+immutability-helper@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/immutability-helper/-/immutability-helper-3.0.2.tgz#e9187158b47c93368a92e84c31714c4b3dff30b0"
+  integrity sha512-fcrJ26wpvUcuGRpoGY4hyQ/JOeR1HAunMmE3C0XYXSe6plAGtgTlB2S4BzueBANCPrDJ7AByL1yrIRLIlVfwpA==
+  dependencies:
+    invariant "^2.2.4"
 
 import-cwd@^2.0.0:
   version "2.1.0"

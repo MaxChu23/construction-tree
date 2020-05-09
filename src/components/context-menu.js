@@ -1,5 +1,5 @@
 import Portal from './portal'
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
 const ButtonsContainerPos = styled.div`
@@ -68,11 +68,27 @@ const ContextMenu = ({
   buttonsAnimation,
   togglePropertyOptions,
   addLink,
-  showDeletePrompt,
   deleteLink,
   toggleChangeType,
   toggleChangeName,
 }) => {
+  const [showDeletePrompt, setShowDeletePrompt] = useState(false)
+  const deletePromptTimeout = useRef(null)
+
+  const onDeleteButtonClick = useCallback(() => {
+    if (!showDeletePrompt) {
+      setShowDeletePrompt(true)
+      deletePromptTimeout.current = setTimeout(() => {
+        setShowDeletePrompt(false)
+      }, 1000)
+      return
+    }
+
+    deleteLink()
+  }, [deleteLink, showDeletePrompt])
+
+  useEffect(() => () => clearTimeout(deletePromptTimeout.current), [])
+
   return (
     <Portal id="context-menu-portal">
       <ButtonsContainerPos style={contextMenuPositionStyle}>
@@ -106,7 +122,13 @@ const ContextMenu = ({
               <Button animation={buttonsAnimation} index={1} onClick={addLink} tabIndex="0">
                 {'Add Item'}
               </Button>
-              <Button animation={buttonsAnimation} index={2} isRed={showDeletePrompt} onClick={deleteLink} tabIndex="0">
+              <Button
+                animation={buttonsAnimation}
+                index={2}
+                isRed={showDeletePrompt}
+                onClick={onDeleteButtonClick}
+                tabIndex="0"
+              >
                 {showDeletePrompt ? 'Are you sure?' : 'Delete'}
               </Button>
               <Button animation={buttonsAnimation} index={3} onClick={toggleChangeType} tabIndex="0">

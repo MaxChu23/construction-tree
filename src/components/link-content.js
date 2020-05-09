@@ -3,7 +3,16 @@ import Input from './input'
 import Properties from './properties'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { findTreeLink, isTextSelected } from '../utils'
+import update from 'immutability-helper'
+import {
+  addItemToLink,
+  addProp,
+  deleteLinkOperation,
+  deleteProp,
+  findTreeLink,
+  isTextSelected,
+  updateLink,
+} from '../utils'
 
 const HasItemsIndicator = styled.div`
   position: absolute;
@@ -183,7 +192,6 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   const propNameInputRef = useRef(null)
   const propValueInputRef = useRef(null)
 
-  const deletePromptTimeout = useRef(null)
   const contextMenuTimeout = useRef(null)
   const contextMenuTimeout2 = useRef(null)
   const blurTimeoutRef = useRef(null)
@@ -193,7 +201,6 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   const [showContextMenu, setShowContextMenu] = useState(false)
   const renamingType = useMemo(() => renaming && renaming.id === link.id && renaming.type, [link.id, renaming])
 
-  const [showDeletePrompt, setShowDeletePrompt] = useState(false)
   const [buttonsAnimation, setButtonsAnimation] = useState('hide')
   const [showPropertiesOptions, setShowPropertiesOptions] = useState(false)
   const [changingProperty, setChangingProperty] = useState(null)
@@ -223,120 +230,53 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   )
 
   const addLink = useCallback(() => {
-    const newTreeData = [...treeData]
-
-    var newLink = findTreeLink({ items: newTreeData, id: link.id })
-    if (!newLink) return
-
-    const obj = {
-      id: newLink.item.id + '.' + newLink.item.items.length,
+    const item = {
+      id: link.id + '.' + link.items.length,
       type: '',
       name: '',
       expanded: false,
       items: [],
     }
 
-    newLink.item.items.push(obj)
-    newLink.item.expanded = true
-
-    setTreeData(newTreeData)
-    setRenaming({ id: obj.id, type: 'type', value: '' })
+    setTreeData(addItemToLink(treeData, link, item))
+    setRenaming({ id: item.id, type: 'type', value: '' })
     toggleShowContextMenu()
-  }, [link.id, setTreeData, treeData, toggleShowContextMenu, setRenaming])
+  }, [link, setTreeData, treeData, toggleShowContextMenu, setRenaming])
 
   const deleteLink = useCallback(() => {
-    if (!showDeletePrompt) {
-      setShowDeletePrompt(true)
-      deletePromptTimeout.current = setTimeout(() => {
-        setShowDeletePrompt(false)
-      }, 1000)
-      return
-    }
-
-    const newTreeData = [...treeData]
-
-    var newLink = findTreeLink({ items: newTreeData, id: link.id })
-    if (!newLink) return
-
-    const index = newLink.items.indexOf(newLink.item)
-    if (index === -1) return
-
-    newLink.items.splice(index, 1)
-
-    setTreeData(newTreeData)
+    setTreeData(deleteLinkOperation(treeData, link))
     toggleShowContextMenu()
-  }, [link.id, setTreeData, treeData, toggleShowContextMenu, showDeletePrompt])
+  }, [link, setTreeData, treeData, toggleShowContextMenu])
+
+  const addLinkProp = useCallback(
+    (prop, index) => {
+      setTreeData(addProp(treeData, link, prop, index))
+      return prop
+    },
+    [link, treeData, setTreeData]
+  )
 
   const deleteLinkProp = useCallback(
     propId => {
-      const newTreeData = [...treeData]
-
-      var newLink = findTreeLink({ items: newTreeData, id: link.id })
-      if (!newLink) return
-      var newLinkPropIndex = newLink.item.properties.findIndex(item => item.id === propId)
-      if (newLinkPropIndex === -1) return
-
-      newLink.item.properties.splice(newLinkPropIndex, 1)
-
-      setTreeData(newTreeData)
-      return newLink.item.properties[newLinkPropIndex]
+      setTreeData(deleteProp(treeData, link, propId))
     },
     [setTreeData, treeData, link]
   )
 
   const handleExpand = useCallback(() => {
-    const newTreeData = [...treeData]
-
-    const newLink = findTreeLink({ items: newTreeData, id: link.id })
-    if (!newLink) return
-
-    newLink.item.expanded = !link.expanded
-
-    setTreeData(newTreeData)
-  }, [link.expanded, link.id, treeData, setTreeData])
+    setTreeData(updateLink(treeData, link, { expanded: !link.expanded }))
+  }, [link, treeData, setTreeData])
 
   const renameLink = useCallback(
     event => {
-      const value = event.target.value
+      if (!renaming) return
 
-      const newTreeData = [...treeData]
-
-      var newLink = findTreeLink({ items: newTreeData, id: link.id })
-      if (!newLink || !renaming) return
-
-      newLink.item[renaming.type] = value
+      const fieldsToChange = { [renaming.type]: event.target.value }
 
       setRenaming(link.name === '' ? { id: link.id, type: 'name', value: '' } : null)
-      setTreeData(newTreeData)
+      setTreeData(updateLink(treeData, link, fieldsToChange))
     },
     [renaming, link, treeData, setTreeData, setRenaming]
-  )
-
-  const addLinkProp = useCallback(
-    (prop, index) => {
-      const newTreeData = [...treeData]
-
-      var newLink = findTreeLink({ items: newTreeData, id: link.id })
-      if (!newLink) return
-
-      const newLinkProp = { ...prop }
-      const props = newLink.item.properties || []
-
-      if (!newLinkProp.id) {
-        newLinkProp.id = props.length + 1
-      }
-
-      // TODO: desctruct the object first!
-      if (index) {
-        newLink.item.properties.splice(index, 0, newLinkProp)
-      } else {
-        newLink.item.properties = [...props, newLinkProp]
-      }
-
-      setTreeData(newTreeData)
-      return newLinkProp
-    },
-    [link, treeData, setTreeData]
   )
 
   const updateLinkProp = useCallback(
@@ -514,12 +454,30 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
 
   useEffect(() => {
     return () => {
-      clearTimeout(deletePromptTimeout.current)
       clearTimeout(contextMenuTimeout.current)
       clearTimeout(contextMenuTimeout2.current)
       clearTimeout(blurTimeoutRef.current)
     }
   }, [])
+
+  const moveProp = useCallback(
+    (dragIndex, hoverIndex) => {
+      const dragCard = treeData[dragIndex]
+
+      var newLink = findTreeLink({ items: treeData, id: link.id })
+      if (!newLink) return
+
+      setTreeData(
+        update(treeData, {
+          $splice: [
+            [dragIndex, 1],
+            [hoverIndex, 0, dragCard],
+          ],
+        })
+      )
+    },
+    [link.id, treeData, setTreeData]
+  )
 
   return (
     <ContentContainer
@@ -565,6 +523,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
             deleteLinkProp={deleteLinkProp}
             enablePropChanging={enablePropChanging}
             link={link}
+            moveProp={moveProp}
             onPropChange={onPropChange}
             onPropInputBlur={onPropInputBlur}
             onPropInputFocus={onPropInputFocus}
@@ -586,7 +545,6 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
           deleteLink={deleteLink}
           onBlur={onBlur}
           onFocus={onFocus}
-          showDeletePrompt={showDeletePrompt}
           showPropertiesOptions={showPropertiesOptions}
           toggleChangeName={toggleChangeName}
           toggleChangeType={toggleChangeType}
