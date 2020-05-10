@@ -69,7 +69,8 @@ const PropertyContainer = styled.div`
   position: relative;
   width: 100%;
   min-height: 18px;
-  border: 1px solid #fb0;
+
+  opacity: ${({ isDragging }) => (!isDragging ? 1 : 0)};
 
   &:hover {
     ${DeleteButton} span {
@@ -140,6 +141,7 @@ const InputFiller = styled.span`
 const Property = ({
   index,
   property,
+  link,
   enablePropChanging,
   changingProperty,
   onPropInputFocus,
@@ -151,6 +153,7 @@ const Property = ({
   selectedPropInput,
   deleteLinkProp,
   moveProp,
+  setIsDraggingProp,
 }) => {
   const confirmationTimeout = useRef(null)
   const ref = useRef(null)
@@ -161,7 +164,14 @@ const Property = ({
     item: {
       id: property.id,
       index,
+      link,
       type: 'prop',
+    },
+    begin: () => {
+      setIsDraggingProp(true)
+    },
+    end: () => {
+      setIsDraggingProp(false)
     },
     collect: monitor => ({
       isDragging: !!monitor.isDragging(),
@@ -170,15 +180,9 @@ const Property = ({
 
   const [, dropRef] = useDrop({
     accept: 'prop',
-    hover(item, monitor) {
-      if (!ref.current) {
-        return
-      }
-      const dragIndex = item.id
-      const hoverIndex = index
-      if (dragIndex === hoverIndex) {
-        return
-      }
+    hover: (prop, monitor) => {
+      if (prop.index === index || !ref.current) return
+      const external = link.id !== prop.link.id
 
       const hoverBoundingRect = ref.current.getBoundingClientRect()
 
@@ -191,20 +195,21 @@ const Property = ({
       // When dragging downwards, only move when the cursor is below 50%
       // When dragging upwards, only move when the cursor is above 50%
       // Dragging downwards
-      if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) {
-        return
-      }
+      if (!external && prop.index < index && hoverClientY < hoverMiddleY) return
       // Dragging upwards
-      if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) {
-        return
-      }
+      if (!external && prop.index > index && hoverClientY > hoverMiddleY) return
       // Time to actually perform the action
-      moveProp(dragIndex, hoverIndex)
+      moveProp(prop, index)
       // Note: we're mutating the monitor item here!
       // Generally it's better to avoid mutations,
       // but it's good here for the sake of performance
       // to avoid expensive index searches.
-      item.index = hoverIndex
+      prop.index = index
+      // TODO: Here it's assigning the wrong link!
+      // This link doesn't have this prop!
+      if (external) {
+        prop.link = link
+      }
     },
   })
 
@@ -228,15 +233,13 @@ const Property = ({
 
   dragRef(dropRef(ref))
 
-  const opacity = isDragging ? 0 : 1
-
   return (
     <PropertyContainer
       data-prop-id={property.id}
+      isDragging={isDragging}
       key={property.id}
       onDoubleClick={enablePropChanging}
       ref={ref}
-      style={{ opacity }}
     >
       <DeleteButton onClick={onDeleteButtonClick} showConfirmation={showConfirmation}>
         {showConfirmation ? '?' : <span />}

@@ -11,7 +11,7 @@ const PropertiesContainer = styled.div`
   border-top-style: dashed;
 `
 
-let Properties = ({
+const Properties = ({
   link,
   changingProperty,
   enablePropChanging,
@@ -24,6 +24,7 @@ let Properties = ({
   selectedPropInput,
   deleteLinkProp,
   moveProp,
+  setIsDraggingProp,
 }) => {
   return (
     <PropertiesContainer>
@@ -34,6 +35,7 @@ let Properties = ({
           enablePropChanging={enablePropChanging}
           index={index}
           key={property.id}
+          link={link}
           moveProp={moveProp}
           onPropChange={onPropChange}
           onPropInputBlur={onPropInputBlur}
@@ -43,6 +45,7 @@ let Properties = ({
           propNameInputRef={propNameInputRef}
           propValueInputRef={propValueInputRef}
           selectedPropInput={selectedPropInput}
+          setIsDraggingProp={setIsDraggingProp}
         />
       ))}
     </PropertiesContainer>

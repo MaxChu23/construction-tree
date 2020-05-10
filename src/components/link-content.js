@@ -1,9 +1,8 @@
 import ContextMenu from './context-menu'
-import Input from './input'
+import LinkHead from './link-head'
 import Properties from './properties'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
-import update from 'immutability-helper'
 import {
   addItemToLink,
   addProp,
@@ -11,8 +10,40 @@ import {
   deleteProp,
   findTreeLink,
   isTextSelected,
+  sortProp,
   updateLink,
 } from '../utils'
+
+const Container = styled.div`
+  position: relative;
+
+  ${({ expanded }) => `
+    &::before {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      width: 1px;
+      height: 30px;
+      background: #777;
+      transition: transform 0.2s ease-in;
+      transform: scaleY(${expanded ? 1 : 0});
+      transform-origin: top;
+    }
+  `}
+
+  ${({ showContextMenu }) =>
+    !showContextMenu
+      ? `
+    &:hover {
+      ${ButtonsLauncher} {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  `
+      : `${ButtonsLauncher} { transform: scale(1); opacity: 1; }`}
+`
 
 const HasItemsIndicator = styled.div`
   position: absolute;
@@ -74,37 +105,6 @@ const HasItemsIndicator = styled.div`
   }
 `
 
-const ContentContainer = styled.div`
-  position: relative;
-
-  ${({ expanded }) => `
-    &::before {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      width: 1px;
-      height: 30px;
-      background: #777;
-      transition: transform 0.2s ease-in;
-      transform: scaleY(${expanded ? 1 : 0});
-      transform-origin: top;
-    }
-  `}
-
-  ${({ showContextMenu }) =>
-    !showContextMenu
-      ? `
-    &:hover {
-      ${ButtonsLauncher} {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-  `
-      : `${ButtonsLauncher} { transform: scale(1); opacity: 1; }`}
-`
-
 const ButtonsLauncher = styled.div`
   transform: scale(0);
   opacity: 0;
@@ -157,34 +157,7 @@ const Content = styled.div`
   box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.3);
 `
 
-const TypeContainer = styled.div`
-  background: linear-gradient(-45deg, #88ffe4, #5874ff);
-  width: 100%;
-  text-align: center;
-  border-bottom: 1px solid #333;
-`
-
-const Type = styled.div`
-  padding: 2px 10px;
-  color: #fff;
-  font-weight: 700;
-  text-transform: uppercase;
-  user-select: none;
-  font-size: 12px;
-`
-
-const Name = styled.div`
-  color: #333;
-  font-weight: 700;
-  user-select: none;
-  text-align: center;
-  font-size: 14px;
-
-  width: 100%;
-  padding: 2px 10px;
-`
-
-const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initialAnimation }) => {
+const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initialAnimation, setIsDraggingProp }) => {
   const propBlurTimeout = useRef(null)
 
   const buttonsLauncherRef = useRef(null)
@@ -199,7 +172,6 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   const [selectedPropInput, setSelectedPropInput] = useState(null)
 
   const [showContextMenu, setShowContextMenu] = useState(false)
-  const renamingType = useMemo(() => renaming && renaming.id === link.id && renaming.type, [link.id, renaming])
 
   const [buttonsAnimation, setButtonsAnimation] = useState('hide')
   const [showPropertiesOptions, setShowPropertiesOptions] = useState(false)
@@ -272,9 +244,11 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
       if (!renaming) return
 
       const fieldsToChange = { [renaming.type]: event.target.value }
+      setRenaming(renaming.type === 'type' && link.name === '' ? { id: link.id, type: 'name', value: '' } : null)
 
-      setRenaming(link.name === '' ? { id: link.id, type: 'name', value: '' } : null)
-      setTreeData(updateLink(treeData, link, fieldsToChange))
+      const newTreeData = updateLink(treeData, link, fieldsToChange)
+
+      setTreeData(newTreeData)
     },
     [renaming, link, treeData, setTreeData, setRenaming]
   )
@@ -461,61 +435,24 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
   }, [])
 
   const moveProp = useCallback(
-    (dragIndex, hoverIndex) => {
-      const dragCard = treeData[dragIndex]
-
-      var newLink = findTreeLink({ items: treeData, id: link.id })
-      if (!newLink) return
-
-      setTreeData(
-        update(treeData, {
-          $splice: [
-            [dragIndex, 1],
-            [hoverIndex, 0, dragCard],
-          ],
-        })
-      )
+    (prop, hoverIndex) => {
+      setTreeData(sortProp(treeData, link, prop, hoverIndex))
     },
-    [link.id, treeData, setTreeData]
+    [link, treeData, setTreeData]
   )
 
   return (
-    <ContentContainer
-      expanded={initialAnimation && link.expanded && link.items.length > 1}
-      showContextMenu={showContextMenu}
-    >
+    <Container expanded={initialAnimation && link.expanded && link.items.length > 1} showContextMenu={showContextMenu}>
       <Content>
-        <TypeContainer onDoubleClick={toggleChangeType}>
-          {renamingType === 'type' ? (
-            <Input
-              autoFocus
-              color="#fff"
-              data-rename="type"
-              onBlur={renameLink}
-              onChange={onInputChange}
-              onKeyDown={onInputKeyDown}
-              tabIndex="0"
-              value={renaming.value}
-            />
-          ) : (
-            <Type>{link.type}</Type>
-          )}
-        </TypeContainer>
-        {renamingType === 'name' ? (
-          <Input
-            autoFocus
-            color="#333"
-            data-rename="name"
-            onBlur={renameLink}
-            onChange={onInputChange}
-            onKeyDown={onInputKeyDown}
-            tabIndex="0"
-            type="name"
-            value={renaming.value}
-          />
-        ) : (
-          <Name onDoubleClick={toggleChangeName}>{link.name}</Name>
-        )}
+        <LinkHead
+          link={link}
+          onInputChange={onInputChange}
+          onInputKeyDown={onInputKeyDown}
+          renameLink={renameLink}
+          renaming={renaming}
+          toggleChangeName={toggleChangeName}
+          toggleChangeType={toggleChangeType}
+        />
         {link.properties && link.properties.length > 0 && (
           <Properties
             addLinkProp={addLinkProp}
@@ -531,6 +468,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
             propNameInputRef={propNameInputRef}
             propValueInputRef={propValueInputRef}
             selectedPropInput={selectedPropInput}
+            setIsDraggingProp={setIsDraggingProp}
           />
         )}
       </Content>
@@ -556,7 +494,7 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
           <span />
         </HasItemsIndicator>
       )}
-    </ContentContainer>
+    </Container>
   )
 }
 

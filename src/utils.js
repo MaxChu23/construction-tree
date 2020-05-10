@@ -77,39 +77,46 @@ const getSplitFromSequence = sequence => {
 
 const sortLink = (treeData, link, afterId, nodeId) => {
   const treeWithoutLink = deleteLinkOperation(treeData, link)
-  const targetSequence = nodeId ? findDeepIndexById({ items: treeWithoutLink, id: nodeId }) + '.items' : '0.items'
+  const targetSequence = nodeId ? findDeepIndexById({ items: treeWithoutLink, id: nodeId }) : '0'
 
   if (afterId) {
     const afterIndex = findDeepIndexById({ items: treeData, id: afterId }).split('.').pop()
-    return update(treeWithoutLink, unflatten({ [targetSequence + '.$splice']: [[afterIndex, 0, link]] }))
+    return update(treeWithoutLink, unflatten({ [targetSequence + '.items.$splice']: [[afterIndex, 0, link]] }))
   }
-  return update(treeWithoutLink, unflatten({ [targetSequence + '.$push']: [link] }))
+  return update(treeWithoutLink, unflatten({ [targetSequence + '.items.$push']: [link] }))
 }
 
-/*
-(id, afterId, nodeId) => {
-  if (id === afterId) return
-  const newTreeData = [...treeData]
+const sortProp = (treeData, link, prop, hoverIndex) => {
+  const sequence = findDeepIndexById({ items: treeData, id: link.id })
 
-  const item = { ...findItem(id, newTreeData) }
-  if (!item.id) {
-    return
+  const external = link.id !== prop.link.id
+
+  const propObject = (external ? prop.link : link).properties.find(linkProp => linkProp.id === prop.id)
+
+  if (!propObject) {
+    return treeData
   }
 
-  const destination = nodeId ? findItem(nodeId, newTreeData).items : newTreeData
+  const value = !external
+    ? [
+        [prop.index, 1],
+        [hoverIndex, 0, propObject],
+      ]
+    : [[hoverIndex, 0, propObject]]
 
-  if (!afterId) {
-    removeNode(id, newTreeData)
-    destination.push(item)
+  const newTreeData = update(
+    treeData,
+    unflatten({
+      [sequence + '.properties.$splice']: value,
+    })
+  )
+
+  if (external) {
+    return deleteProp(newTreeData, prop.link, prop.id)
   } else {
-    const index = destination.indexOf(destination.filter(destinationItem => destinationItem.id === afterId).shift())
-    removeNode(id, newTreeData)
-    destination.splice(index, 0, item)
+    return newTreeData
   }
-
-  setTreeData(newTreeData)
-},
-*/
+}
 
 // ------------------------------
 // ------------------------------
@@ -149,46 +156,42 @@ const deleteLinkOperation = (treeData, link) => {
 }
 
 const addProp = (treeData, link, prop, index) => {
-  const newTreeData = [...treeData]
+  var sequence = findDeepIndexById({ items: treeData, id: link.id })
 
-  var newLink = findTreeLink({ items: newTreeData, id: link.id })
-  if (!newLink) return treeData
+  const newProp = { ...prop }
 
-  const newLinkProp = { ...prop }
-  const props = newLink.item.properties || []
-
-  if (!newLinkProp.id) {
-    newLinkProp.id = props.length + 1
+  if (!newProp.id) {
+    newProp.id = link.id + '.' + link.properties.length + 1
   }
 
-  if (index) {
-    newLink.item.properties.splice(index, 0, newLinkProp)
-  } else {
-    newLink.item.properties = [...props, newLinkProp]
+  const command = {
+    [sequence + '.properties' + index ? '.$splice' : '.$push']: [index ? [index, 0, newProp] : newProp],
   }
-
-  return newTreeData
+  return update(treeData, unflatten(command))
 }
 
 const deleteProp = (treeData, link, propId) => {
-  const newTreeData = [...treeData]
+  var sequence = findDeepIndexById({ items: treeData, id: link.id })
 
-  var newLink = findTreeLink({ items: newTreeData, id: link.id })
-  if (!newLink) return treeData
-  var newLinkPropIndex = newLink.item.properties.findIndex(item => item.id === propId)
-  if (newLinkPropIndex === -1) return treeData
+  const propIndex = link.properties.findIndex(prop => prop.id === propId)
 
-  newLink.item.properties.splice(newLinkPropIndex, 1)
-  return newTreeData
+  if (propIndex === -1) return treeData
+
+  return update(
+    treeData,
+    unflatten({
+      [sequence + '.properties.$splice']: [[propIndex, 1]],
+    })
+  )
 }
 
 const updateLink = (treeData, link, fieldsToChange) => {
-  var deepIndex = findDeepIndexById({ items: treeData, id: link.id }) + '.$merge'
+  var deepIndex = findDeepIndexById({ items: treeData, id: link.id })
 
   const newTreeData = update(
     treeData,
     unflatten({
-      [deepIndex]: fieldsToChange,
+      [deepIndex + '.$merge']: fieldsToChange,
     })
   )
 
@@ -206,4 +209,5 @@ export {
   deleteProp,
   updateLink,
   sortLink,
+  sortProp,
 }

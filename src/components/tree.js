@@ -1,7 +1,7 @@
 import Link from './link'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
-import { findTreeLink, sortLink } from '../utils'
+import { findTreeLink, sortLink, updateLink } from '../utils'
 
 const Container = styled.div`
   width: 100%;
@@ -54,21 +54,37 @@ const Container = styled.div`
       opacity: 1;
     }
   }
+
+  @keyframes green-square {
+    0% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
 `
 
 const Tree = ({ initialData }) => {
   const [treeData, setTreeData] = useState(initialData || {})
   const [renaming, setRenaming] = useState(null)
+  const [isDraggingProp, setIsDraggingProp] = useState(false)
 
-  const moveItemTimer = useRef(null)
+  // const moveItemTimer = useRef(null)
 
   const moveItem = useCallback(
     (id, afterId, nodeId) => {
       if (id === afterId) return
       const link = findTreeLink({ items: treeData, id }).item
-      const newTreeData = sortLink(treeData, link, afterId, nodeId)
+      var newTreeData = sortLink(treeData, link, afterId, nodeId)
+      if (nodeId) {
+        const nodeLink = findTreeLink({ items: newTreeData, id: nodeId }).item
+        newTreeData = updateLink(newTreeData, nodeLink, { expanded: true })
+      }
       setTreeData(newTreeData)
-      moveItemTimer.current = null
     },
     [treeData]
   )
@@ -77,11 +93,14 @@ const Tree = ({ initialData }) => {
     <Container>
       {treeData.map(branch => (
         <Link
+          isDraggingProp={isDraggingProp}
           isPrimary
           key={branch.id}
           link={branch}
           moveItem={moveItem}
+          parent={null}
           renaming={renaming}
+          setIsDraggingProp={setIsDraggingProp}
           setRenaming={setRenaming}
           setTreeData={setTreeData}
           treeData={treeData}

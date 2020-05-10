@@ -3,7 +3,7 @@ const tree = [
     id: 1,
     type: 'Project',
     name: 'Burj Khalifa',
-    expanded: false,
+    expanded: true,
     properties: [
       { id: 1, type: 'boolean', value: true, name: 'Tall' },
       { id: 2, type: 'boolean', value: false, name: 'Easy' },
@@ -19,8 +19,8 @@ const tree = [
         name: '2',
         expanded: false,
         properties: [
-          { id: 1, type: 'boolean', value: true, name: 'Big' },
-          { id: 2, type: 'text', value: 'Platform B', name: 'Type' },
+          { id: 7, type: 'boolean', value: true, name: 'Big' },
+          { id: 8, type: 'text', value: 'Platform B', name: 'Type' },
         ],
         items: [
           {
