@@ -65,8 +65,8 @@ const DropContainer = styled.div`
   left: -20px;
   right: -20px;
   bottom: 0;
-  border: 1px dotted #f00;
-  background: rgba(255, 0, 0, 0.1);
+  /* border: 1px dotted #f00; */
+  /* background: rgba(255, 0, 0, 0.1); */
   z-index: ${({ isDraggingProp }) => (isDraggingProp ? -1 : 1)};
 `
 
@@ -246,7 +246,7 @@ const Link = ({
     },
   })
 
-  const [{ isDragging }, dragRef] = useDrag({
+  const [{ isDragging }, dragRef, previewRef] = useDrag({
     item: {
       id: link.id,
       parent,
@@ -268,8 +268,9 @@ const Link = ({
     drop: (draggedItem, monitor) => {
       if (!monitor.isOver({ shallow: true })) return
 
-      const descendantNode = findItem(draggedItem.id, link.items)
-      if (descendantNode) return
+      const childNode = findItem(link.id, draggedItem.items)
+      if (childNode) return
+
       if ((draggedItem.parent && draggedItem.parent.id === link.id) || draggedItem.id === link.id) return
 
       moveItem(draggedItem.id, undefined, link.id)
@@ -292,7 +293,7 @@ const Link = ({
   return (
     <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary}>
       <GreenSquareEffect active={isOverSubTree} />
-      <ContainerPos isFirst={isFirst} isPrimary={isPrimary}>
+      <ContainerPos isFirst={isFirst} isPrimary={isPrimary} ref={previewRef}>
         <DragContainer ref={dragRef}>
           <DropContainer isDraggingProp={isDraggingProp} ref={dropRefContainer} />
           <div style={{ position: 'relative' }}>

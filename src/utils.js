@@ -104,8 +104,17 @@ const sortProp = (treeData, link, prop, hoverIndex) => {
       ]
     : [[hoverIndex, 0, propObject]]
 
+  const safeTree = !link.properties
+    ? update(
+        treeData,
+        unflatten({
+          [sequence + '.$merge']: { properties: [] },
+        })
+      )
+    : treeData
+
   const newTreeData = update(
-    treeData,
+    safeTree,
     unflatten({
       [sequence + '.properties.$splice']: value,
     })
@@ -161,13 +170,23 @@ const addProp = (treeData, link, prop, index) => {
   const newProp = { ...prop }
 
   if (!newProp.id) {
-    newProp.id = link.id + '.' + link.properties.length + 1
+    newProp.id = link.id + '.' + (link.properties ? link.properties.length : 0) + 1
   }
 
   const command = {
-    [sequence + '.properties' + index ? '.$splice' : '.$push']: [index ? [index, 0, newProp] : newProp],
+    [sequence + '.properties' + (index ? '.$splice' : '.$push')]: [index ? [index, 0, newProp] : newProp],
   }
-  return update(treeData, unflatten(command))
+
+  const safeTree = !link.properties
+    ? update(
+        treeData,
+        unflatten({
+          [sequence + '.$merge']: { properties: [] },
+        })
+      )
+    : treeData
+
+  return { treeData: update(safeTree, unflatten(command)), prop: newProp }
 }
 
 const deleteProp = (treeData, link, propId) => {

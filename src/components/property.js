@@ -164,7 +164,8 @@ const Property = ({
     item: {
       id: property.id,
       index,
-      link,
+      link: { ...link },
+      propReference: property,
       type: 'prop',
     },
     begin: () => {
@@ -204,12 +205,12 @@ const Property = ({
       // Generally it's better to avoid mutations,
       // but it's good here for the sake of performance
       // to avoid expensive index searches.
-      prop.index = index
-      // TODO: Here it's assigning the wrong link!
-      // This link doesn't have this prop!
-      if (external) {
-        prop.link = link
+      prop.link = { ...link }
+      if (!external) {
+        prop.link.properties.splice(prop.index, 1)
       }
+      prop.index = index
+      prop.link.properties.splice(index, 0, prop.propReference)
     },
   })
 

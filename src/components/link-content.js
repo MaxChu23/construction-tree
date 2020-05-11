@@ -222,8 +222,9 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
 
   const addLinkProp = useCallback(
     (prop, index) => {
-      setTreeData(addProp(treeData, link, prop, index))
-      return prop
+      const result = addProp(treeData, link, prop, index)
+      setTreeData(result.treeData)
+      return result.prop
     },
     [link, treeData, setTreeData]
   )
@@ -453,24 +454,23 @@ const LinkContent = ({ treeData, link, renaming, setRenaming, setTreeData, initi
           toggleChangeName={toggleChangeName}
           toggleChangeType={toggleChangeType}
         />
-        {link.properties && link.properties.length > 0 && (
-          <Properties
-            addLinkProp={addLinkProp}
-            changingProperty={changingProperty}
-            deleteLinkProp={deleteLinkProp}
-            enablePropChanging={enablePropChanging}
-            link={link}
-            moveProp={moveProp}
-            onPropChange={onPropChange}
-            onPropInputBlur={onPropInputBlur}
-            onPropInputFocus={onPropInputFocus}
-            onPropInputKeyDown={onPropInputKeyDown}
-            propNameInputRef={propNameInputRef}
-            propValueInputRef={propValueInputRef}
-            selectedPropInput={selectedPropInput}
-            setIsDraggingProp={setIsDraggingProp}
-          />
-        )}
+
+        <Properties
+          addLinkProp={addLinkProp}
+          changingProperty={changingProperty}
+          deleteLinkProp={deleteLinkProp}
+          enablePropChanging={enablePropChanging}
+          link={link}
+          moveProp={moveProp}
+          onPropChange={onPropChange}
+          onPropInputBlur={onPropInputBlur}
+          onPropInputFocus={onPropInputFocus}
+          onPropInputKeyDown={onPropInputKeyDown}
+          propNameInputRef={propNameInputRef}
+          propValueInputRef={propValueInputRef}
+          selectedPropInput={selectedPropInput}
+          setIsDraggingProp={setIsDraggingProp}
+        />
       </Content>
       <ButtonsLauncher onClick={toggleShowContextMenu} ref={buttonsLauncherRef} />
       {showContextMenu && (
