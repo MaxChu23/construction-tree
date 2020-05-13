@@ -8,7 +8,6 @@ const Container = styled.div`
   bottom: 0;
   background: #fff;
   color: #333;
-  padding-top: 50px;
   width: 300px;
   height: 100vh;
   z-index: 1000;
@@ -42,7 +41,7 @@ const SidebarButton = styled.div`
   transition: all 0.3s;
   box-shadow: 0px 3px 10px rgba(0, 50, 100, 0.25);
 
-  transform: ${({ isOpen }) => (isOpen ? 'translateX(250px)' : 'translateX(0)')};
+  transform: ${({ isOpen }) => (isOpen ? 'translateX(300px)' : 'translateX(0)')};
   display: flex;
   justify-content: center;
   align-items: center;
