@@ -1,3 +1,9 @@
+## Tree builder
+
+This is a highly interactive tree builder app built with React.
+
+## General
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
