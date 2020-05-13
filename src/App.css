@@ -5,6 +5,10 @@ body {
   height: 100%;
 }
 
+#root {
+  height: 100%;
+}
+
 body {
   margin: 0;
   font-family: "Roboto", sans-serif;
@@ -19,6 +23,7 @@ body {
   box-sizing: border-box;
 }
 
-input {
+input,
+button {
   font-family: "Roboto", sans-serif;
 }

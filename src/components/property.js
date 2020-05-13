@@ -153,7 +153,7 @@ const Property = ({
   selectedPropInput,
   deleteLinkProp,
   moveProp,
-  setIsDraggingProp,
+  setDraggingItem,
 }) => {
   const confirmationTimeout = useRef(null)
   const ref = useRef(null)
@@ -169,10 +169,10 @@ const Property = ({
       type: 'prop',
     },
     begin: () => {
-      setIsDraggingProp(true)
+      setDraggingItem('prop')
     },
     end: () => {
-      setIsDraggingProp(false)
+      setDraggingItem(false)
     },
     collect: monitor => ({
       isDragging: !!monitor.isDragging(),

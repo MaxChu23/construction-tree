@@ -24,7 +24,7 @@ const Button = styled.button`
   border: 1px solid ${({ isRed }) => (isRed ? '#f88' : '#777')};
   border-radius: 4px;
   ${({ animation }) => animation !== 'show' && 'pointer-events: none;'}
-  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0px 5px 15px rgba(0, 50, 100, 0.2);
 
   &:hover,
   &:focus {

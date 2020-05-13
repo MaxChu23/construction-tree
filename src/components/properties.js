@@ -34,7 +34,7 @@ const Properties = ({
   selectedPropInput,
   deleteLinkProp,
   moveProp,
-  setIsDraggingProp,
+  setDraggingItem,
 }) => {
   const [, dropRef] = useDrop({
     accept: 'prop',
@@ -71,7 +71,7 @@ const Properties = ({
           propNameInputRef={propNameInputRef}
           propValueInputRef={propValueInputRef}
           selectedPropInput={selectedPropInput}
-          setIsDraggingProp={setIsDraggingProp}
+          setDraggingItem={setDraggingItem}
         />
       ))}
     </PropertiesContainer>

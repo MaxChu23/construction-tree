@@ -1,4 +1,4 @@
-import LinkContent from './link-content'
+import LinkContentContainer from './link-content-container'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { findItem } from '../utils'
@@ -14,6 +14,7 @@ const Container = styled.div`
   opacity: ${({ initialAnimation }) => (initialAnimation ? 1 : 0)};
   transform: translateY(${({ initialAnimation }) => (initialAnimation ? 0 : 10)}px);
   transition: all 0.3s;
+  margin: 0 auto;
 
   ${({ isFirst, isPrimary }) =>
     !isFirst &&
@@ -67,7 +68,8 @@ const DropContainer = styled.div`
   bottom: 0;
   /* border: 1px dotted #f00; */
   /* background: rgba(255, 0, 0, 0.1); */
-  z-index: ${({ isDraggingProp }) => (isDraggingProp ? -1 : 1)};
+  z-index: 1;
+  ${({ draggingItem }) => !draggingItem && 'pointer-events: none; -webkit-user-drag: none;'};
 `
 
 const ContainerPos = styled.div`
@@ -147,29 +149,20 @@ const GreenSquareEffect = ({ active }) => {
   return <GreenSquare show={show} />
 }
 
-const ItemsTree = ({
-  link,
-  moveItem,
-  renaming,
-  setRenaming,
-  treeData,
-  setTreeData,
-  setIsDraggingProp,
-  isDraggingProp,
-}) => {
+const ItemsTree = ({ link, moveItem, renaming, setRenaming, treeData, setTreeData, setDraggingItem, draggingItem }) => {
   return (
     <ItemsContainer>
       {link.expanded &&
         link.items.map((branch, index) => (
           <Link
+            draggingItem={draggingItem}
             index={index}
-            isDraggingProp={isDraggingProp}
             key={branch.id}
             link={branch}
             moveItem={moveItem}
             parent={link}
             renaming={renaming}
-            setIsDraggingProp={setIsDraggingProp}
+            setDraggingItem={setDraggingItem}
             setRenaming={setRenaming}
             setTreeData={setTreeData}
             treeData={treeData}
@@ -189,8 +182,8 @@ const Link = ({
   moveItem,
   parent,
   index,
-  isDraggingProp,
-  setIsDraggingProp,
+  draggingItem,
+  setDraggingItem,
 }) => {
   const [initialAnimation, setInitialAnimation] = useState(false)
 
@@ -207,14 +200,9 @@ const Link = ({
     return () => clearTimeout(animationTimer.current)
   }, [])
 
-  const [{ isOver }, dropRef] = useDrop({
+  const [, dropRef] = useDrop({
     accept: 'item',
     canDrop: false,
-    collect: monitor => {
-      return {
-        isOver: monitor.isOver({ shallow: true }),
-      }
-    },
     hover: (draggedItem, monitor) => {
       if (!dropRefContainer.current) return
       if (draggedItem.id === link.id || (parent && draggedItem.id === parent.id)) return
@@ -246,7 +234,7 @@ const Link = ({
     },
   })
 
-  const [{ isDragging }, dragRef, previewRef] = useDrag({
+  const [, dragRef, previewRef] = useDrag({
     item: {
       id: link.id,
       parent,
@@ -254,10 +242,11 @@ const Link = ({
       items: link.items,
       type: 'item',
     },
-    collect: monitor => {
-      return {
-        isDragging: monitor.isDragging(),
-      }
+    begin: () => {
+      setDraggingItem('item')
+    },
+    end: () => {
+      setDraggingItem(null)
     },
   })
 
@@ -295,13 +284,13 @@ const Link = ({
       <GreenSquareEffect active={isOverSubTree} />
       <ContainerPos isFirst={isFirst} isPrimary={isPrimary} ref={previewRef}>
         <DragContainer ref={dragRef}>
-          <DropContainer isDraggingProp={isDraggingProp} ref={dropRefContainer} />
+          <DropContainer draggingItem={draggingItem} ref={dropRefContainer} />
           <div style={{ position: 'relative' }}>
-            <LinkContent
+            <LinkContentContainer
               initialAnimation={initialAnimation}
               link={link}
               renaming={renaming}
-              setIsDraggingProp={setIsDraggingProp}
+              setDraggingItem={setDraggingItem}
               setRenaming={setRenaming}
               setTreeData={setTreeData}
               treeData={treeData}
@@ -310,12 +299,12 @@ const Link = ({
           </div>
         </DragContainer>
         <ItemsTree
-          isDraggingProp={isDraggingProp}
+          draggingItem={draggingItem}
           link={link}
           moveItem={moveItem}
           parent={link}
           renaming={renaming}
-          setIsDraggingProp={setIsDraggingProp}
+          setDraggingItem={setDraggingItem}
           setRenaming={setRenaming}
           setTreeData={setTreeData}
           treeData={treeData}
