@@ -92,8 +92,8 @@ const PropertyName = styled.div`
   flex-grow: 0;
   flex-basis: 40%;
   position: relative;
-  width: 40%;
-  overflow-x: hidden;
+  /* width: 40%; */
+  /* overflow-x: hidden; */
 `
 
 const PropertyValue = styled.div`

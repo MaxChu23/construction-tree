@@ -14,7 +14,6 @@ const Container = styled.div`
   opacity: ${({ initialAnimation }) => (initialAnimation ? 1 : 0)};
   transform: translateY(${({ initialAnimation }) => (initialAnimation ? 0 : 10)}px);
   transition: all 0.3s;
-  margin: 0 auto;
 
   ${({ isFirst, isPrimary }) =>
     !isFirst &&
@@ -24,8 +23,8 @@ const Container = styled.div`
     `}
 
   ${({ isPrimary, isLast, isFirst, initialAnimation }) =>
-    !isPrimary &&
-    `
+    !isPrimary
+      ? `
     margin-top: 50px;
     &::before {
       content: '';
@@ -57,7 +56,8 @@ const Container = styled.div`
       `
         : ''
     }
-  `}
+  `
+      : 'margin: 0 auto;'}
 `
 
 const DropContainer = styled.div`
