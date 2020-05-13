@@ -66,10 +66,10 @@ const SidebarButton = styled.div`
   }
 `
 
-const Cross = styled.div`
+const GoBackIcon = styled.div`
   position: absolute;
   top: 50%;
-  left: 27%;
+  left: 30%;
   transform: translate(-50%, -50%);
   transform: rotate(-45deg);
 
@@ -102,27 +102,36 @@ const Tutorial = () => (
     <p>{'This is a multifunctional tree. You can do all sorts of things with it.'}</p>
     <hr />
     <h3>{'Item'}</h3>
-    <p>{'You can create, change and remove items as you wish. To do so use the context menu:'}</p>
+    <p>{'You can create, change and remove items as you wish. To do so use the context menu.'}</p>
+    <h4>{'Context Menu'}</h4>
     <p>
-      {`Hover over an item to see its context menu in the top-right corner of the item element (on mobile devices it will appear by default, you don't need to hover).
-        It will appear as a small white circle with a rhombus inside.`}
+      {
+        "Hover over an item to see its context menu (on mobile devices you don't need to hover). It will appear in the top-right corner of the item element as a small white circle with an icon inside."
+      }
     </p>
     <p>{'To change the item fields you need to click a corresponding button in its context menu.'}</p>
+    <h4>{'Changing the type and name'}</h4>
+    <p>{'You can also just click on the type or name of the item to change them.'}</p>
+    <h4>{'Sorting items'}</h4>
+    <p>{'You can sort items by dragging them to the place you want using your mouse.'}</p>
     <hr />
     <h3>{'Item properties'}</h3>
-    <p>{'Create new properties by:'}</p>
+    <h4>{'Creating new properties'}</h4>
     <ul>
       <li>{'Click on the Context Menu of an Item;'}</li>
       <li>{'Go to properties;'}</li>
-      <li>{'Choose property type;'}</li>
+      <li>{'Choose property type.'}</li>
     </ul>
     <p>{"Now, when the property is created, you can change it's key and value;"}</p>
+    <h4>{'Sorting properties'}</h4>
     <p>{'You can also sort properties by dragging them. It works for cross-item sorting as well :)'}</p>
+    <h4>{'Deleting properties'}</h4>
+    <ul>
+      <li>{"There's small icon to the left side from the property. Click on it;"}</li>
+      <li>{'It will show the confirmation prompt now. Click on it to delete property.'}</li>
+    </ul>
     <hr />
-    <h3>{'Sorting'}</h3>
-    <p>{'You can sort items by dragging them to the place you want using your mouse.'}</p>
-    <hr />
-    <h3>{'Author'}</h3>
+    <h3>{'Credits'}</h3>
     <p>{'Made with 💖 by MaxChu23 (mymaksym@gmail.com)'}</p>
   </div>
 )
@@ -140,7 +149,7 @@ const Sidebar = () => {
         <span />
         <span />
         <span />
-        <Cross />
+        <GoBackIcon />
       </SidebarButton>
       <Container isOpen={isOpen}>
         <ScrollContainer>
