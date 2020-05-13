@@ -253,6 +253,7 @@ const Property = ({
               autoFocus={selectedPropInput === 'name' || changingProperty.name === ''}
               color="#333"
               data-prop-type="name"
+              maxLength={24}
               onBlur={onPropInputBlur}
               onChange={onPropChange}
               onFocus={onPropInputFocus}
@@ -276,6 +277,7 @@ const Property = ({
                 autoFocus={selectedPropInput === 'value'}
                 color="#333"
                 data-prop-type="value"
+                maxLength={32}
                 onBlur={onPropInputBlur}
                 onChange={onPropChange}
                 onFocus={onPropInputFocus}

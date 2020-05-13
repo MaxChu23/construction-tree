@@ -181,6 +181,7 @@ const FlyingFigure = styled.div`
   position: absolute;
   background: linear-gradient(35deg, #fff5 30%, #fff0 70%);
   z-index: 0;
+  mix-blend-mode: overlay;
 
   ${({ figure }) => `
     border-radius: 50%;
