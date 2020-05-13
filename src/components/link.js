@@ -68,7 +68,7 @@ const DropContainer = styled.div`
   bottom: 0;
   /* border: 1px dotted #f00; */
   /* background: rgba(255, 0, 0, 0.1); */
-  z-index: 1;
+  z-index: ${({ draggingItem }) => (draggingItem === 'item' ? 1 : -1)};
   ${({ draggingItem }) => !draggingItem && 'pointer-events: none; -webkit-user-drag: none;'};
 `
 
@@ -210,8 +210,6 @@ const Link = ({
 
       const childNode = findItem(link.id, draggedItem.items)
       if (childNode) return
-
-      // calc widths
 
       const hoverBoundingRect = dropRefContainer.current.getBoundingClientRect()
 

@@ -53,7 +53,7 @@ const Properties = ({
   if (!link.properties || link.properties.length === 0) return <DropContainer ref={dropRef} />
 
   return (
-    <PropertiesContainer ref={dropRef}>
+    <PropertiesContainer>
       {link.properties.map((property, index) => (
         <Property
           changingProperty={changingProperty}

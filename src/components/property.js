@@ -172,7 +172,7 @@ const Property = ({
       setDraggingItem('prop')
     },
     end: () => {
-      setDraggingItem(false)
+      setDraggingItem(null)
     },
     collect: monitor => ({
       isDragging: !!monitor.isDragging(),
