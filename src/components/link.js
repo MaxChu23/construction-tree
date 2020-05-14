@@ -78,12 +78,6 @@ const ContainerPos = styled.div`
   align-items: center;
   outline: none;
   position: relative;
-
-  &:hover {
-    > div:first-child > div:first-child {
-      z-index: -1;
-    }
-  }
 `
 
 const ItemsContainer = styled.div`
