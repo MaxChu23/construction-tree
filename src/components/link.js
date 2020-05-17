@@ -15,6 +15,13 @@ const Container = styled.div`
   transform: translateY(${({ initialAnimation }) => (initialAnimation ? 0 : 10)}px);
   transition: all 0.3s;
 
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background: #777;
+  }
+
   ${({ isFirst, isPrimary }) =>
     !isFirst &&
     !isPrimary &&
@@ -27,12 +34,9 @@ const Container = styled.div`
       ? `
     margin-top: 50px;
     &::before {
-      content: '';
-      position: absolute;
       top: ${isFirst && isLast ? '-50px' : '-20px'};
       width: 1px;
       height: ${isFirst && isLast ? '50px' : '20px'};
-      background: #777;
       transition: transform 0.2s ${isFirst && isLast ? '' : '0.4s'} ease-out;
       transform: scaleY(${initialAnimation ? 1 : 0});
       transform-origin: top;
@@ -40,15 +44,11 @@ const Container = styled.div`
     ${
       !(isLast && isFirst)
         ? `
-
       &::after {
-        content: '';
-        position: absolute;
         top: -20px;
         left: ${isLast ? 0 : !isFirst ? '0' : '50%'};
         right: ${isLast ? '50%' : '-10px'};
         height: 1px;
-        background: #777;
         transition: transform 0.2s 0.2s linear;
         transform: scaleX(${initialAnimation ? 1 : 0});
         transform-origin: ${isLast ? 'left' : 'right'};
@@ -72,7 +72,7 @@ const DropContainer = styled.div`
   ${({ draggingItem }) => !draggingItem && 'pointer-events: none; -webkit-user-drag: none;'};
 `
 
-const ContainerPos = styled.div`
+const PositionContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -133,11 +133,7 @@ const GreenSquareEffect = ({ active }) => {
   const [show, setShow] = useState(false)
 
   useEffect(() => {
-    if (!active) {
-      setShow(false)
-    } else {
-      setShow(true)
-    }
+    setShow(active)
   }, [active])
 
   return <GreenSquare show={show} />
@@ -212,12 +208,8 @@ const Link = ({
       const clientOffset = monitor.getClientOffset()
 
       const hoverClientX = clientOffset.x - hoverBoundingRect.left
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
-      // Dragging downwards
+
       if (draggedItem.index < index && hoverClientX < hoverMiddleX) return
-      // Dragging upwards
       if (draggedItem.index > index && hoverClientX > hoverMiddleX) return
 
       moveItem(draggedItem.id, link.id, parent && parent.id)
@@ -263,7 +255,7 @@ const Link = ({
 
       const parentOrSelf = (draggedItem.parent && draggedItem.parent.id === link.id) || draggedItem.id === link.id
 
-      const isOverSubTree = monitor.isOver({ shallow: true }) && !descendantNode && !parentOrSelf
+      const isOverSubTree = !descendantNode && !parentOrSelf && monitor.isOver({ shallow: true })
 
       return {
         isOverSubTree,
@@ -274,7 +266,7 @@ const Link = ({
   return (
     <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary}>
       <GreenSquareEffect active={isOverSubTree} />
-      <ContainerPos isFirst={isFirst} isPrimary={isPrimary} ref={previewRef}>
+      <PositionContainer isFirst={isFirst} isPrimary={isPrimary} ref={previewRef}>
         <DragContainer ref={dragRef}>
           <DropContainer draggingItem={draggingItem} ref={dropRefContainer} />
           <div style={{ position: 'relative' }}>
@@ -301,7 +293,7 @@ const Link = ({
           setTreeData={setTreeData}
           treeData={treeData}
         />
-      </ContainerPos>
+      </PositionContainer>
     </Container>
   )
 }

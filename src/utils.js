@@ -34,15 +34,6 @@ const findDeepIndexById = ({ items, id }) => {
   return -1
 }
 
-const isTextSelected = input => {
-  if (typeof input.selectionStart === 'number') {
-    return input.selectionStart === 0 && input.selectionEnd === input.value.length
-  } else if (typeof document.selection != 'undefined') {
-    input.focus()
-    return document.selection.createRange().text === input.value
-  }
-}
-
 const findItem = (id, items) => {
   for (const node of items) {
     if (node.id === id) return node
@@ -54,19 +45,6 @@ const findItem = (id, items) => {
     }
   }
   return false
-}
-
-const removeNode = (id, items) => {
-  for (const node of items) {
-    if (node.id === id) {
-      items.splice(items.indexOf(node), 1)
-      return
-    }
-
-    if (node.items && node.items.length) {
-      removeNode(id, node.items)
-    }
-  }
 }
 
 const getSplitFromSequence = sequence => {
@@ -217,11 +195,19 @@ const updateLink = (treeData, link, fieldsToChange) => {
   return newTreeData
 }
 
+const isTextSelected = input => {
+  if (typeof input.selectionStart === 'number') {
+    return input.selectionStart === 0 && input.selectionEnd === input.value.length
+  } else if (typeof document.selection != 'undefined') {
+    input.focus()
+    return document.selection.createRange().text === input.value
+  }
+}
+
 export {
   findTreeLink,
   isTextSelected,
   findItem,
-  removeNode,
   addItemToLink,
   deleteLinkOperation,
   addProp,

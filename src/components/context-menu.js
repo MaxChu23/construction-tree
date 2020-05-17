@@ -2,7 +2,7 @@ import Portal from './portal'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 
-const ButtonsContainerPos = styled.div`
+const Container = styled.div`
   position: absolute;
 `
 
@@ -19,19 +19,31 @@ const ButtonsContainer = styled.div`
 
 const Button = styled.button`
   -webkit-appearance: none;
-  color: ${({ isRed }) => (isRed ? '#fff' : '#333')};
   outline: none;
-  border: 1px solid ${({ isRed }) => (isRed ? '#f88' : '#777')};
+  user-select: none;
+
   border-radius: 4px;
-  ${({ animation }) => animation !== 'show' && 'pointer-events: none;'}
-  box-shadow: 0px 5px 15px rgba(0, 50, 100, 0.2);
+
+  ${({ showPrompt }) =>
+    showPrompt
+      ? `
+    color: #fff;
+    box-shadow: 0px 0px 10px rgba(255,150,150,0.5);
+    border: 1px solid #f88;
+    background: #f88;
+  `
+      : `
+    color: #333;
+    box-shadow: 0px 5px 15px rgba(0, 50, 100, 0.2);
+    border: 1px solid #777;
+    background: #fff;
+  `}
 
   &:hover,
   &:focus {
-    background: ${({ isRed }) => (isRed ? '#f88' : '#fb0')};
+    background: ${({ showPrompt }) => (showPrompt ? '#f88' : '#fb0')};
   }
 
-  background: ${({ isRed }) => (isRed ? '#f88' : '#fff')};
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -41,109 +53,116 @@ const Button = styled.button`
   z-index: 12;
   padding: 3px 6px;
   cursor: pointer;
-  user-select: none;
+
   ${({ index }) => `
     transition: 0.3s all, 0.1s color, transform 0.2s ${index / 20}s, opacity 0.2s ${index / 20}s;
   `}
 
-  ${({ animation }) => `
-    transform: ${animation === 'hide' ? 'translateX(-30px)' : 'translateX(0px)'};
-    opacity: ${animation === 'hide' ? 0 : 1};
+  ${({ animateButtons }) => `
+    transform: ${!animateButtons ? 'translateX(-30px)' : 'translateX(0px)'};
+    opacity: ${!animateButtons ? 0 : 1};
+    ${!animateButtons ? 'pointer-events: none;' : ''}
   `}
 
   & + & {
     margin-top: 2px;
   }
-
-  ${({ isRed }) => isRed && 'box-shadow: 0px 0px 10px rgba(255,150,150,0.5);'}
 `
 
-const ContextMenu = ({
-  contextMenuPositionStyle,
-  buttonsContainerRef,
-  showPropertiesOptions,
-  onFocus,
-  onBlur,
-  addPropAndChange,
-  buttonsAnimation,
-  togglePropertyOptions,
-  addLink,
-  deleteLink,
-  toggleChangeType,
-  toggleChangeName,
-}) => {
-  const [showDeletePrompt, setShowDeletePrompt] = useState(false)
-  const deletePromptTimeout = useRef(null)
+const ContextMenu = ({ contextMenuPositionStyle, setShow, show, clickMenuButton, content }) => {
+  const [currentMenuContent, setCurrentMenuContent] = useState(content && content.main)
+  const [promptId, setPromptId] = useState(null)
+  const [animateButtons, setAnimateButtons] = useState(false)
 
-  const onDeleteButtonClick = useCallback(() => {
-    if (!showDeletePrompt) {
-      setShowDeletePrompt(true)
-      deletePromptTimeout.current = setTimeout(() => {
-        setShowDeletePrompt(false)
-      }, 1000)
-      return
+  const buttonPromptTimeout = useRef(null)
+  const buttonsFocusTimeouRef = useRef(null)
+  const buttonsContainerRef = useRef(null)
+  const buttonsAnimationTimeoutRef = useRef(null)
+  const blurTimeoutRef = useRef(null)
+
+  const showButtonPrompt = useCallback(buttonId => {
+    setPromptId(buttonId)
+    buttonPromptTimeout.current = setTimeout(() => {
+      setPromptId(null)
+    }, 1000)
+  }, [])
+
+  useEffect(() => {
+    buttonsAnimationTimeoutRef.current = setTimeout(() => {
+      setAnimateButtons(true)
+    }, 20)
+  }, [show])
+
+  useEffect(() => {
+    if (animateButtons || currentMenuContent) {
+      buttonsFocusTimeouRef.current = setTimeout(() => {
+        buttonsContainerRef.current && buttonsContainerRef.current.focus()
+      }, 10)
     }
+  }, [animateButtons, currentMenuContent, buttonsContainerRef])
 
-    deleteLink()
-  }, [deleteLink, showDeletePrompt])
+  const onBlur = useCallback(() => {
+    blurTimeoutRef.current = setTimeout(() => {
+      setShow(false)
+    }, 100)
+  }, [setShow])
 
-  useEffect(() => () => clearTimeout(deletePromptTimeout.current), [])
+  const onButtonClick = useCallback(
+    event => {
+      const buttonId = event.currentTarget.getAttribute('data-button-id')
+      if (!buttonId) return
+
+      const button = currentMenuContent.find(button => button.id === buttonId)
+
+      if (button.confirmationLabel && !promptId) {
+        return showButtonPrompt(buttonId)
+      }
+
+      if (button.switchToMenu) {
+        return setCurrentMenuContent(content[button.switchToMenu])
+      }
+
+      onBlur()
+
+      clickMenuButton(buttonId)
+    },
+    [promptId, showButtonPrompt, clickMenuButton, currentMenuContent, content, onBlur]
+  )
+
+  useEffect(
+    () => () => {
+      clearTimeout(buttonPromptTimeout.current)
+      clearTimeout(buttonsFocusTimeouRef.current)
+      clearTimeout(blurTimeoutRef.current)
+    },
+    []
+  )
+
+  const onFocus = useCallback(() => {
+    clearTimeout(blurTimeoutRef.current)
+  }, [])
+
+  if (!currentMenuContent) return null
 
   return (
     <Portal id="context-menu-portal">
-      <ButtonsContainerPos style={contextMenuPositionStyle}>
+      <Container style={contextMenuPositionStyle}>
         <ButtonsContainer onBlur={onBlur} onFocus={onFocus} ref={buttonsContainerRef} tabIndex="0">
-          {showPropertiesOptions ? (
-            <>
-              <Button
-                animation={buttonsAnimation}
-                data-prop-type="text"
-                index={1}
-                onClick={addPropAndChange}
-                tabIndex="0"
-              >
-                {'Text'}
-              </Button>
-              <Button
-                animation={buttonsAnimation}
-                data-prop-type="boolean"
-                index={2}
-                onClick={addPropAndChange}
-                tabIndex="0"
-              >
-                {'Boolean'}
-              </Button>
-              <Button animation={buttonsAnimation} index={4} onClick={togglePropertyOptions} tabIndex="0">
-                {'Cancel'}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button animation={buttonsAnimation} index={1} onClick={addLink} tabIndex="0">
-                {'Add Item'}
-              </Button>
-              <Button
-                animation={buttonsAnimation}
-                index={2}
-                isRed={showDeletePrompt}
-                onClick={onDeleteButtonClick}
-                tabIndex="0"
-              >
-                {showDeletePrompt ? 'Are you sure?' : 'Delete'}
-              </Button>
-              <Button animation={buttonsAnimation} index={3} onClick={toggleChangeType} tabIndex="0">
-                {'Change Type'}
-              </Button>
-              <Button animation={buttonsAnimation} index={4} onClick={toggleChangeName} tabIndex="0">
-                {'Change Name'}
-              </Button>
-              <Button animation={buttonsAnimation} index={5} onClick={togglePropertyOptions} tabIndex="0">
-                {'Add Property'}
-              </Button>
-            </>
-          )}
+          {currentMenuContent.map((button, index) => (
+            <Button
+              animateButtons={animateButtons}
+              data-button-id={button.id}
+              index={index}
+              key={button.id}
+              onClick={onButtonClick}
+              showPrompt={promptId === button.id}
+              tabIndex="0"
+            >
+              {promptId === button.id ? button.confirmationLabel : button.label}
+            </Button>
+          ))}
         </ButtonsContainer>
-      </ButtonsContainerPos>
+      </Container>
     </Portal>
   )
 }

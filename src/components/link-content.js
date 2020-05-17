@@ -30,16 +30,13 @@ const Content = ({
   addLinkProp,
   changingProperty,
   deleteLinkProp,
-  moveProp,
   onPropChange,
-  onPropInputBlur,
-  onPropInputFocus,
   enablePropChanging,
-  onPropInputKeyDown,
-  propNameInputRef,
-  propValueInputRef,
   selectedPropInput,
+  treeData,
+  setTreeData,
   setDraggingItem,
+  setChangingProperty,
 }) => {
   return (
     <Container>
@@ -52,22 +49,18 @@ const Content = ({
         toggleChangeName={toggleChangeName}
         toggleChangeType={toggleChangeType}
       />
-
       <Properties
         addLinkProp={addLinkProp}
         changingProperty={changingProperty}
         deleteLinkProp={deleteLinkProp}
         enablePropChanging={enablePropChanging}
         link={link}
-        moveProp={moveProp}
         onPropChange={onPropChange}
-        onPropInputBlur={onPropInputBlur}
-        onPropInputFocus={onPropInputFocus}
-        onPropInputKeyDown={onPropInputKeyDown}
-        propNameInputRef={propNameInputRef}
-        propValueInputRef={propValueInputRef}
         selectedPropInput={selectedPropInput}
+        setChangingProperty={setChangingProperty}
         setDraggingItem={setDraggingItem}
+        setTreeData={setTreeData}
+        treeData={treeData}
       />
     </Container>
   )

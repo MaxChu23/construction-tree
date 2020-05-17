@@ -119,20 +119,23 @@ const Input = styled.input`
 `
 
 const BigButton = styled.button`
-  position: relative;
   -webkit-appearance: none;
+  cursor: pointer;
+
+  position: relative;
   margin-top: 25px;
-  font-size: 18px;
+  padding: 8px 40px;
+
   color: #fff;
   outline: none;
-  letter-spacing: 1px;
+  background: linear-gradient(45deg, #3496fc, #2ae4e5);
   border: 1px solid transparent;
   border-radius: 8px;
-  padding: 8px 40px;
+
+  font-size: 18px;
   font-weight: 700;
   text-transform: uppercase;
-  background: linear-gradient(45deg, #3496fc, #2ae4e5);
-  cursor: pointer;
+  letter-spacing: 1px;
 `
 
 const DecorativeRectangle = styled.div`
