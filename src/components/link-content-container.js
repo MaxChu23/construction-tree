@@ -125,7 +125,12 @@ const LinkContentContainer = ({
       if (!renaming) return
 
       const fieldsToChange = { [renaming.type]: event.target.value }
-      setRenaming(renaming.type === 'type' && link.name === '' ? { id: link.id, type: 'name', value: '' } : null)
+      const continueRenaming =
+        (renaming.type === 'type' && (link.name === '' || (event.keyCode === 9 && !event.shiftKey))) ||
+        (renaming.type === 'name' && event.keyCode === 9 && event.shiftKey)
+
+      const continueType = renaming.type === 'type' ? 'name' : 'type'
+      setRenaming(continueRenaming ? { id: link.id, type: continueType, value: link[continueType] } : null)
 
       const newTreeData = updateLink(treeData, link, fieldsToChange)
 
@@ -144,7 +149,8 @@ const LinkContentContainer = ({
 
   const onInputKeyDown = useCallback(
     event => {
-      if (event.key === 'Enter') {
+      if (event.keyCode === 13 || event.keyCode === 9) {
+        event.preventDefault()
         renameLink(event)
       }
     },

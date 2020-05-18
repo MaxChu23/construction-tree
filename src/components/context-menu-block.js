@@ -1,5 +1,5 @@
 import ContextMenu from './context-menu'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { addItemToLink, deleteLinkOperation } from '../utils'
 
@@ -104,36 +104,11 @@ const ContextMenuBlock = ({
 
     setTreeData(addItemToLink(treeData, link, item))
     setRenaming({ id: item.id, type: 'type', value: '' })
-    toggleShowContextMenu()
-  }, [link, setTreeData, treeData, toggleShowContextMenu, setRenaming])
+  }, [link, setTreeData, treeData, setRenaming])
 
   const deleteLink = useCallback(() => {
     setTreeData(deleteLinkOperation(treeData, link))
-    toggleShowContextMenu()
-  }, [link, setTreeData, treeData, toggleShowContextMenu])
-
-  const contextMenuPositionStyle = useMemo(() => {
-    if (!showContextMenu) return
-    if (!buttonsLauncherRef || !buttonsLauncherRef.current) return {}
-    const result = {}
-    const clientRect = buttonsLauncherRef.current.getBoundingClientRect()
-    const contextMenuExceedsWidth = clientRect.x + 100 - window.innerWidth > 0
-    const contextMenuExceedsHeight = clientRect.y + 100 - window.innerHeight > 0
-
-    if (contextMenuExceedsWidth) {
-      result.right = 100
-    } else {
-      result.left = clientRect.x
-    }
-
-    if (contextMenuExceedsHeight) {
-      result.bottom = 100
-    } else {
-      result.top = clientRect.y
-    }
-
-    return result
-  }, [showContextMenu, buttonsLauncherRef])
+  }, [link, setTreeData, treeData])
 
   const addPropAndChange = useCallback(
     type => {
@@ -189,14 +164,14 @@ const ContextMenuBlock = ({
     <>
       <MenuLauncher
         className="menu-launcher"
-        onClick={toggleShowContextMenu}
+        onMouseDown={toggleShowContextMenu}
         ref={buttonsLauncherRef}
         showContextMenu={showContextMenu}
       />
       <ContextMenu
+        anchorElement={buttonsLauncherRef}
         clickMenuButton={clickMenuButton}
         content={contextMenuContent}
-        contextMenuPositionStyle={contextMenuPositionStyle}
         setShow={setShowContextMenu}
         show={showContextMenu}
       />

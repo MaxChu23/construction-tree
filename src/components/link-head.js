@@ -38,7 +38,11 @@ const LinkHead = ({
   renaming,
   link,
 }) => {
-  const renamingType = useMemo(() => renaming && renaming.type && renaming.id === link.id, [link.id, renaming])
+  const renamingType = useMemo(() => {
+    if (renaming && renaming.id === link.id) {
+      return renaming.type
+    }
+  }, [link.id, renaming])
 
   return (
     <>

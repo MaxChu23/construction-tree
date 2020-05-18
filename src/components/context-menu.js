@@ -4,6 +4,8 @@ import styled from 'styled-components'
 
 const Container = styled.div`
   position: absolute;
+  left: 0;
+  top: 0;
 `
 
 const ButtonsContainer = styled.div`
@@ -69,16 +71,52 @@ const Button = styled.button`
   }
 `
 
-const ContextMenu = ({ contextMenuPositionStyle, setShow, show, clickMenuButton, content }) => {
+const getContextMenuStyle = (anchorElement, contextMenu) => {
+  const result = {}
+
+  const anchorClientRect = anchorElement.current.getBoundingClientRect()
+  const menuClientRect = contextMenu.current.getBoundingClientRect()
+
+  if (anchorClientRect.x + menuClientRect.width > window.innerWidth + window.scrollX) {
+    result.left = anchorClientRect.x - menuClientRect.width
+  } else {
+    result.left = anchorClientRect.x
+  }
+
+  if (anchorClientRect.y + menuClientRect.height > window.innerHeight + window.scrollY) {
+    result.top = anchorClientRect.y - menuClientRect.height
+  } else {
+    result.top = anchorClientRect.y
+  }
+
+  return result
+}
+
+const ContextMenu = ({ setShow, show, clickMenuButton, content, anchorElement }) => {
   const [currentMenuContent, setCurrentMenuContent] = useState(content && content.main)
   const [promptId, setPromptId] = useState(null)
   const [animateButtons, setAnimateButtons] = useState(false)
+  const [showContainer, setShowContainer] = useState(false)
+  // Without the opacity: 0 it will show on the screen right after appearing in the top-left corner of the screen!
+  const [containerStyle, setContainerStyle] = useState({ opacity: 0 })
+
+  const buttonsContainerRef = useRef(null)
 
   const buttonPromptTimeout = useRef(null)
   const buttonsFocusTimeouRef = useRef(null)
-  const buttonsContainerRef = useRef(null)
   const buttonsAnimationTimeoutRef = useRef(null)
   const blurTimeoutRef = useRef(null)
+  const showContainerTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    if (!animateButtons) return
+    if (!anchorElement || !anchorElement.current || !buttonsContainerRef || !buttonsContainerRef.current) return
+
+    setTimeout(() => {
+      const style = getContextMenuStyle(anchorElement, buttonsContainerRef)
+      setContainerStyle(style)
+    }, 40)
+  }, [animateButtons, anchorElement])
 
   const showButtonPrompt = useCallback(buttonId => {
     setPromptId(buttonId)
@@ -88,29 +126,39 @@ const ContextMenu = ({ contextMenuPositionStyle, setShow, show, clickMenuButton,
   }, [])
 
   useEffect(() => {
+    clearTimeout(showContainerTimeoutRef.current)
+    clearTimeout(buttonsAnimationTimeoutRef.current)
+
+    showContainerTimeoutRef.current = setTimeout(
+      () => {
+        setShowContainer(show)
+      },
+      show ? 0 : 1000
+    )
     buttonsAnimationTimeoutRef.current = setTimeout(() => {
-      setAnimateButtons(true)
-    }, 20)
+      setAnimateButtons(show)
+    }, 30)
   }, [show])
 
   useEffect(() => {
+    if (!show) return
     if (animateButtons || currentMenuContent) {
       buttonsFocusTimeouRef.current = setTimeout(() => {
         buttonsContainerRef.current && buttonsContainerRef.current.focus()
       }, 10)
     }
-  }, [animateButtons, currentMenuContent, buttonsContainerRef])
+  }, [animateButtons, currentMenuContent, buttonsContainerRef, show])
 
   const onBlur = useCallback(() => {
     blurTimeoutRef.current = setTimeout(() => {
       setShow(false)
-    }, 100)
+    }, 0)
   }, [setShow])
 
   const onButtonClick = useCallback(
     event => {
       const buttonId = event.currentTarget.getAttribute('data-button-id')
-      if (!buttonId) return
+      if (!buttonId || !currentMenuContent) return
 
       const button = currentMenuContent.find(button => button.id === buttonId)
 
@@ -118,7 +166,7 @@ const ContextMenu = ({ contextMenuPositionStyle, setShow, show, clickMenuButton,
         return showButtonPrompt(buttonId)
       }
 
-      if (button.switchToMenu) {
+      if (button.switchToMenu && content) {
         return setCurrentMenuContent(content[button.switchToMenu])
       }
 
@@ -134,6 +182,7 @@ const ContextMenu = ({ contextMenuPositionStyle, setShow, show, clickMenuButton,
       clearTimeout(buttonPromptTimeout.current)
       clearTimeout(buttonsFocusTimeouRef.current)
       clearTimeout(blurTimeoutRef.current)
+      clearTimeout(showContainerTimeoutRef.current)
     },
     []
   )
@@ -142,11 +191,11 @@ const ContextMenu = ({ contextMenuPositionStyle, setShow, show, clickMenuButton,
     clearTimeout(blurTimeoutRef.current)
   }, [])
 
-  if (!currentMenuContent) return null
+  if (!showContainer || !currentMenuContent) return null
 
   return (
     <Portal id="context-menu-portal">
-      <Container style={contextMenuPositionStyle}>
+      <Container style={containerStyle}>
         <ButtonsContainer onBlur={onBlur} onFocus={onFocus} ref={buttonsContainerRef} tabIndex="0">
           {currentMenuContent.map((button, index) => (
             <Button
