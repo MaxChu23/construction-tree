@@ -180,7 +180,7 @@ const Property = ({
   const [, dropRef] = useDrop({
     accept: 'prop',
     hover: (prop, monitor) => {
-      if (prop.index === index || !ref.current) return
+      if (prop.id === property.id || !ref.current) return
       const external = link.id !== prop.link.id
 
       const hoverBoundingRect = ref.current.getBoundingClientRect()
