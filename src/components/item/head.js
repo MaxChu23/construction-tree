@@ -1,4 +1,4 @@
-import Input from './input'
+import Input from '../input'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -29,20 +29,12 @@ const Name = styled.div`
   padding: 2px 10px;
 `
 
-const LinkHead = ({
-  toggleChangeName,
-  toggleChangeType,
-  renameLink,
-  onInputChange,
-  onInputKeyDown,
-  renaming,
-  link,
-}) => {
+const Head = ({ toggleChangeName, toggleChangeType, renameItem, onInputChange, onInputKeyDown, renaming, item }) => {
   const renamingType = useMemo(() => {
-    if (renaming && renaming.id === link.id) {
+    if (renaming && renaming.id === item.id) {
       return renaming.type
     }
-  }, [link.id, renaming])
+  }, [item.id, renaming])
 
   return (
     <>
@@ -52,14 +44,14 @@ const LinkHead = ({
             autoFocus
             color="#fff"
             data-rename="type"
-            onBlur={renameLink}
+            onBlur={renameItem}
             onChange={onInputChange}
             onKeyDown={onInputKeyDown}
             tabIndex="0"
             value={renaming.value}
           />
         ) : (
-          <Type>{link.type}</Type>
+          <Type>{item.type}</Type>
         )}
       </TypeContainer>
       {renamingType === 'name' ? (
@@ -67,7 +59,7 @@ const LinkHead = ({
           autoFocus
           color="#333"
           data-rename="name"
-          onBlur={renameLink}
+          onBlur={renameItem}
           onChange={onInputChange}
           onKeyDown={onInputKeyDown}
           tabIndex="0"
@@ -75,10 +67,10 @@ const LinkHead = ({
           value={renaming.value}
         />
       ) : (
-        <Name onDoubleClick={toggleChangeName}>{link.name}</Name>
+        <Name onDoubleClick={toggleChangeName}>{item.name}</Name>
       )}
     </>
   )
 }
 
-export default LinkHead
+export default Head

@@ -2,8 +2,8 @@ import App from './App'
 import React from 'react'
 import { render } from '@testing-library/react'
 
-it('findTreeLink', () => {
+it('findTreeItem', () => {
   const { getByText } = render(<App />)
-  const linkElement = getByText(/Wunderwaffe/i)
-  expect(linkElement).toBeInTheDocument()
+  const itemElement = getByText(/Wunderwaffe/i)
+  expect(itemElement).toBeInTheDocument()
 })

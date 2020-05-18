@@ -1,4 +1,4 @@
-import Input from './input'
+import Input from '../input'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useDrag, useDrop } from 'react-dnd'
@@ -139,7 +139,7 @@ const InputFiller = styled.span`
 const Property = ({
   index,
   property,
-  link,
+  item,
   enablePropChanging,
   changingProperty,
   onPropInputFocus,
@@ -149,7 +149,7 @@ const Property = ({
   onPropChange,
   propValueInputRef,
   selectedPropInput,
-  deleteLinkProp,
+  deleteItemProp,
   moveProp,
   setDraggingItem,
 }) => {
@@ -162,7 +162,7 @@ const Property = ({
     item: {
       id: property.id,
       index,
-      link: { ...link },
+      item: { ...item },
       propReference: property,
       type: 'prop',
     },
@@ -181,7 +181,7 @@ const Property = ({
     accept: 'prop',
     hover: (prop, monitor) => {
       if (prop.id === property.id || !ref.current) return
-      const external = link.id !== prop.link.id
+      const external = item.id !== prop.item.id
 
       const hoverBoundingRect = ref.current.getBoundingClientRect()
 
@@ -203,12 +203,12 @@ const Property = ({
       // Generally it's better to avoid mutations,
       // but it's good here for the sake of performance
       // to avoid expensive index searches.
-      prop.link = { ...link }
+      prop.item = { ...item }
       if (!external) {
-        prop.link.properties.splice(prop.index, 1)
+        prop.item.properties.splice(prop.index, 1)
       }
       prop.index = index
-      prop.link.properties.splice(index, 0, prop.propReference)
+      prop.item.properties.splice(index, 0, prop.propReference)
     },
   })
 
@@ -221,8 +221,8 @@ const Property = ({
       }, 1000)
       return
     }
-    deleteLinkProp(property.id)
-  }, [deleteLinkProp, showConfirmation, property.id])
+    deleteItemProp(property.id)
+  }, [deleteItemProp, showConfirmation, property.id])
 
   useEffect(() => () => clearTimeout(confirmationTimeout.current), [])
 

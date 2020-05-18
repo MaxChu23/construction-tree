@@ -1,8 +1,8 @@
-import Content from './link-content'
+import Content from './content'
 import ContextMenuBlock from './context-menu-block'
 import React, { useCallback, useState } from 'react'
 import styled from 'styled-components'
-import { addProp, deleteProp, updateLink } from '../utils'
+import { addProp, deleteProp, updateItem } from '../../utils'
 
 const Container = styled.div`
   position: relative;
@@ -89,72 +89,64 @@ const HasItemsIndicator = styled.div`
   }
 `
 
-const LinkContentContainer = ({
-  treeData,
-  link,
-  renaming,
-  setRenaming,
-  setTreeData,
-  initialAnimation,
-  setDraggingItem,
-}) => {
+const ContentContainer = ({ treeData, item, renaming, setRenaming, setTreeData, animate, setDraggingItem }) => {
   const [changingProperty, setChangingProperty] = useState(null)
 
-  const addLinkProp = useCallback(
+  const addItemProp = useCallback(
     (prop, index) => {
-      const result = addProp(treeData, link, prop, index)
+      const result = addProp(treeData, item, prop, index)
       setTreeData(result.treeData)
       return result.prop
     },
-    [link, treeData, setTreeData]
+    [item, treeData, setTreeData]
   )
 
-  const deleteLinkProp = useCallback(
+  const deleteItemProp = useCallback(
     propId => {
-      setTreeData(deleteProp(treeData, link, propId))
+      setTreeData(deleteProp(treeData, item, propId))
     },
-    [setTreeData, treeData, link]
+    [setTreeData, treeData, item]
   )
 
   const handleExpand = useCallback(() => {
-    setTreeData(updateLink(treeData, link, { expanded: !link.expanded }))
-  }, [link, treeData, setTreeData])
+    setTreeData(updateItem(treeData, item, { expanded: !item.expanded }))
+  }, [item, treeData, setTreeData])
 
-  const renameLink = useCallback(
+  const renameItem = useCallback(
     event => {
       if (!renaming) return
 
       const fieldsToChange = { [renaming.type]: event.target.value }
       const continueRenaming =
-        (renaming.type === 'type' && (link.name === '' || (event.keyCode === 9 && !event.shiftKey))) ||
+        (renaming.type === 'type' && (item.name === '' || (event.keyCode === 9 && !event.shiftKey))) ||
         (renaming.type === 'name' && event.keyCode === 9 && event.shiftKey)
 
       const continueType = renaming.type === 'type' ? 'name' : 'type'
-      setRenaming(continueRenaming ? { id: link.id, type: continueType, value: link[continueType] } : null)
+      setRenaming(continueRenaming ? { id: item.id, type: continueType, value: item[continueType] } : null)
 
-      const newTreeData = updateLink(treeData, link, fieldsToChange)
+      const newTreeData = updateItem(treeData, item, fieldsToChange)
 
       setTreeData(newTreeData)
     },
-    [renaming, link, treeData, setTreeData, setRenaming]
+    [renaming, item, treeData, setTreeData, setRenaming]
   )
 
   const toggleChangeName = useCallback(() => {
-    setRenaming({ id: link.id, type: 'name', value: link.name })
-  }, [setRenaming, link.id, link.name])
+    setRenaming({ id: item.id, type: 'name', value: item.name })
+  }, [setRenaming, item.id, item.name])
 
   const toggleChangeType = useCallback(() => {
-    setRenaming({ id: link.id, type: 'type', value: link.type })
-  }, [setRenaming, link.id, link.type])
+    setRenaming({ id: item.id, type: 'type', value: item.type })
+  }, [setRenaming, item.id, item.type])
 
   const onInputKeyDown = useCallback(
     event => {
       if (event.keyCode === 13 || event.keyCode === 9) {
         event.preventDefault()
-        renameLink(event)
+        renameItem(event)
       }
     },
-    [renameLink]
+    [renameItem]
   )
 
   const onInputChange = useCallback(
@@ -165,15 +157,15 @@ const LinkContentContainer = ({
   )
 
   return (
-    <Container expanded={initialAnimation && link.expanded && link.items.length > 1}>
+    <Container expanded={animate && item.expanded && item.items.length > 1}>
       <Content
-        addLinkProp={addLinkProp}
+        addItemProp={addItemProp}
         changingProperty={changingProperty}
-        deleteLinkProp={deleteLinkProp}
-        link={link}
+        deleteItemProp={deleteItemProp}
+        item={item}
         onInputChange={onInputChange}
         onInputKeyDown={onInputKeyDown}
-        renameLink={renameLink}
+        renameItem={renameItem}
         renaming={renaming}
         setChangingProperty={setChangingProperty}
         setDraggingItem={setDraggingItem}
@@ -183,8 +175,8 @@ const LinkContentContainer = ({
         treeData={treeData}
       />
       <ContextMenuBlock
-        addLinkProp={addLinkProp}
-        link={link}
+        addItemProp={addItemProp}
+        item={item}
         setChangingProperty={setChangingProperty}
         setRenaming={setRenaming}
         setTreeData={setTreeData}
@@ -192,8 +184,8 @@ const LinkContentContainer = ({
         toggleChangeType={toggleChangeType}
         treeData={treeData}
       />
-      {link.items.length > 0 && (
-        <HasItemsIndicator expanded={link.expanded} onClick={handleExpand}>
+      {item.items.length > 0 && (
+        <HasItemsIndicator expanded={item.expanded} onClick={handleExpand}>
           <span />
         </HasItemsIndicator>
       )}
@@ -201,4 +193,4 @@ const LinkContentContainer = ({
   )
 }
 
-export default LinkContentContainer
+export default ContentContainer

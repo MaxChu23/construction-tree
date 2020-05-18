@@ -1,7 +1,7 @@
 import Property from './property'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { findTreeLink, isTextSelected, sortProp } from '../utils'
+import { findTreeItem, isTextSelected, sortProp } from '../../utils'
 import { useDrop } from 'react-dnd'
 
 const PropertiesContainer = styled.div`
@@ -23,9 +23,9 @@ const DropContainer = styled.div`
 `
 
 const Properties = ({
-  link,
+  item,
   changingProperty,
-  deleteLinkProp,
+  deleteItemProp,
   setDraggingItem,
   setTreeData,
   treeData,
@@ -39,39 +39,39 @@ const Properties = ({
   const [, dropRef] = useDrop({
     accept: 'prop',
     hover: prop => {
-      if (prop.link.id === link.id || (link.properties && link.properties.length > 0)) return
+      if (prop.item.id === item.id || (item.properties && item.properties.length > 0)) return
       moveProp(prop, 0)
-      prop.link = { ...link }
+      prop.item = { ...item }
       prop.index = 0
-      if (!prop.link.properties) {
-        prop.link.properties = []
+      if (!prop.item.properties) {
+        prop.item.properties = []
       }
-      prop.link.properties.splice(0, 0, prop.propReference)
+      prop.item.properties.splice(0, 0, prop.propReference)
     },
   })
 
-  const updateLinkProp = useCallback(
+  const updateItemProp = useCallback(
     prop => {
       const newTreeData = [...treeData]
       const propData = { ...prop }
 
-      var newLink = findTreeLink({ items: newTreeData, id: link.id })
-      if (!newLink) return
-      var newLinkPropIndex = newLink.item.properties.findIndex(item => item.id === propData.id)
-      if (newLinkPropIndex === -1) return
+      var newItem = findTreeItem({ items: newTreeData, id: item.id })
+      if (!newItem) return
+      var newItemPropIndex = newItem.item.properties.findIndex(child => child.id === propData.id)
+      if (newItemPropIndex === -1) return
 
       if (prop.name === '' && prop.value === '') {
-        newLink.item.properties.splice(newLinkPropIndex, 1)
+        newItem.item.properties.splice(newItemPropIndex, 1)
       } else {
         propData.value =
           propData.type === 'boolean' ? propData.value === 'true' || propData.value === true : propData.value
-        newLink.item.properties[newLinkPropIndex] = { ...newLink.item.properties[newLinkPropIndex], ...propData }
+        newItem.item.properties[newItemPropIndex] = { ...newItem.item.properties[newItemPropIndex], ...propData }
       }
 
       setTreeData(newTreeData)
-      return newLink.item.properties[newLinkPropIndex]
+      return newItem.item.properties[newItemPropIndex]
     },
-    [link, treeData, setTreeData]
+    [item, treeData, setTreeData]
   )
 
   const onPropChange = useCallback(
@@ -96,19 +96,19 @@ const Properties = ({
     event => {
       const propId = event.currentTarget.getAttribute('data-prop-id')
       if (!propId) return
-      setChangingProperty(link.properties.find(prop => prop.id === propId))
+      setChangingProperty(item.properties.find(prop => prop.id === propId))
       const type = event.target.getAttribute('data-prop-type')
       if (type) {
         setSelectedPropInput(type)
       }
     },
-    [link, setChangingProperty]
+    [item, setChangingProperty]
   )
 
   const updateProp = useCallback(() => {
-    updateLinkProp(changingProperty)
+    updateItemProp(changingProperty)
     setChangingProperty(null)
-  }, [changingProperty, updateLinkProp, setChangingProperty])
+  }, [changingProperty, updateItemProp, setChangingProperty])
 
   const onPropInputKeyDown = useCallback(
     event => {
@@ -135,23 +135,23 @@ const Properties = ({
 
   const moveProp = useCallback(
     (prop, hoverIndex) => {
-      setTreeData(sortProp(treeData, link, prop, hoverIndex))
+      setTreeData(sortProp(treeData, item, prop, hoverIndex))
     },
-    [link, treeData, setTreeData]
+    [item, treeData, setTreeData]
   )
 
-  if (!link.properties || link.properties.length === 0) return <DropContainer ref={dropRef} />
+  if (!item.properties || item.properties.length === 0) return <DropContainer ref={dropRef} />
 
   return (
     <PropertiesContainer>
-      {link.properties.map((property, index) => (
+      {item.properties.map((property, index) => (
         <Property
           changingProperty={changingProperty}
-          deleteLinkProp={deleteLinkProp}
+          deleteItemProp={deleteItemProp}
           enablePropChanging={enablePropChanging}
           index={index}
+          item={item}
           key={property.id}
-          link={link}
           moveProp={moveProp}
           onPropChange={onPropChange}
           onPropInputBlur={onPropInputBlur}

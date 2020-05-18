@@ -1,7 +1,7 @@
 import ContextMenu from './context-menu'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { addItemToLink, deleteLinkOperation } from '../utils'
+import { addChild, deleteItemOperation } from '../../utils'
 
 const MenuLauncher = styled.div`
   outline: none;
@@ -79,11 +79,11 @@ const newItemDefaultState = {
 }
 
 const ContextMenuBlock = ({
-  link,
+  item,
   setRenaming,
   treeData,
   setTreeData,
-  addLinkProp,
+  addItemProp,
   toggleChangeName,
   toggleChangeType,
   setChangingProperty,
@@ -98,17 +98,17 @@ const ContextMenuBlock = ({
     setShowContextMenu(!showContextMenu)
   }, [setShowContextMenu, showContextMenu])
 
-  const addLink = useCallback(() => {
-    const item = newItemDefaultState
-    item.id = link.id + '.' + link.items.length
+  const addItem = useCallback(() => {
+    const child = newItemDefaultState
+    child.id = item.id + '.' + item.items.length
 
-    setTreeData(addItemToLink(treeData, link, item))
-    setRenaming({ id: item.id, type: 'type', value: '' })
-  }, [link, setTreeData, treeData, setRenaming])
+    setTreeData(addChild(treeData, item, child))
+    setRenaming({ id: child.id, type: 'type', value: '' })
+  }, [item, setTreeData, treeData, setRenaming])
 
-  const deleteLink = useCallback(() => {
-    setTreeData(deleteLinkOperation(treeData, link))
-  }, [link, setTreeData, treeData])
+  const deleteItem = useCallback(() => {
+    setTreeData(deleteItemOperation(treeData, item))
+  }, [item, setTreeData, treeData])
 
   const addPropAndChange = useCallback(
     type => {
@@ -122,10 +122,10 @@ const ContextMenuBlock = ({
         name: '',
         value: defaultValues[type],
       }
-      const newProp = addLinkProp(prop)
+      const newProp = addItemProp(prop)
       setChangingProperty(newProp)
     },
-    [addLinkProp, setChangingProperty]
+    [addItemProp, setChangingProperty]
   )
 
   useEffect(
@@ -139,7 +139,7 @@ const ContextMenuBlock = ({
   const clickMenuButton = useCallback(
     buttonId => {
       if (buttonId === 'delete-item') {
-        return deleteLink()
+        return deleteItem()
       }
       if (buttonId === 'add-prop-text') {
         return addPropAndChange('text')
@@ -154,10 +154,10 @@ const ContextMenuBlock = ({
         return toggleChangeName()
       }
       if (buttonId === 'add-item') {
-        return addLink()
+        return addItem()
       }
     },
-    [addPropAndChange, deleteLink, toggleChangeName, toggleChangeType, addLink]
+    [addPropAndChange, deleteItem, toggleChangeName, toggleChangeType, addItem]
   )
 
   return (

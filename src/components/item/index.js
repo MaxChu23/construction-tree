@@ -1,7 +1,7 @@
-import LinkContentContainer from './link-content-container'
+import ContentContainer from './content-container'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { findItem } from '../utils'
+import { findItem } from '../../utils'
 import { useDrag, useDrop } from 'react-dnd'
 
 const Container = styled.div`
@@ -11,8 +11,8 @@ const Container = styled.div`
   outline: none;
   position: relative;
 
-  opacity: ${({ initialAnimation }) => (initialAnimation ? 1 : 0)};
-  transform: translateY(${({ initialAnimation }) => (initialAnimation ? 0 : 10)}px);
+  opacity: ${({ animate }) => (animate ? 1 : 0)};
+  transform: translateY(${({ animate }) => (animate ? 0 : 10)}px);
   transition: all 0.3s;
 
   &::before,
@@ -29,7 +29,7 @@ const Container = styled.div`
       margin-left: 10px;
     `}
 
-  ${({ isPrimary, isLast, isFirst, initialAnimation }) =>
+  ${({ isPrimary, isLast, isFirst, animate }) =>
     !isPrimary
       ? `
     margin-top: 50px;
@@ -38,7 +38,7 @@ const Container = styled.div`
       width: 1px;
       height: ${isFirst && isLast ? '50px' : '20px'};
       transition: transform 0.2s ${isFirst && isLast ? '' : '0.4s'} ease-out;
-      transform: scaleY(${initialAnimation ? 1 : 0});
+      transform: scaleY(${animate ? 1 : 0});
       transform-origin: top;
     }
     ${
@@ -50,7 +50,7 @@ const Container = styled.div`
         right: ${isLast ? '50%' : '-10px'};
         height: 1px;
         transition: transform 0.2s 0.2s linear;
-        transform: scaleX(${initialAnimation ? 1 : 0});
+        transform: scaleX(${animate ? 1 : 0});
         transform-origin: ${isLast ? 'left' : 'right'};
       }
       `
@@ -139,18 +139,18 @@ const GreenSquareEffect = ({ active }) => {
   return <GreenSquare show={show} />
 }
 
-const ItemsTree = ({ link, moveItem, renaming, setRenaming, treeData, setTreeData, setDraggingItem, draggingItem }) => {
+const ItemsTree = ({ item, moveItem, renaming, setRenaming, treeData, setTreeData, setDraggingItem, draggingItem }) => {
   return (
     <ItemsContainer>
-      {link.expanded &&
-        link.items.map((branch, index) => (
-          <Link
+      {item.expanded &&
+        item.items.map((child, index) => (
+          <Item
             draggingItem={draggingItem}
             index={index}
-            key={branch.id}
-            link={branch}
+            item={child}
+            key={child.id}
             moveItem={moveItem}
-            parent={link}
+            parent={item}
             renaming={renaming}
             setDraggingItem={setDraggingItem}
             setRenaming={setRenaming}
@@ -162,8 +162,8 @@ const ItemsTree = ({ link, moveItem, renaming, setRenaming, treeData, setTreeDat
   )
 }
 
-const Link = ({
-  link,
+const Item = ({
+  item,
   treeData,
   setTreeData,
   isPrimary,
@@ -175,7 +175,7 @@ const Link = ({
   draggingItem,
   setDraggingItem,
 }) => {
-  const [initialAnimation, setInitialAnimation] = useState(false)
+  const [animate, setAnimate] = useState(false)
 
   const isFirst = useMemo(() => index === 0, [index])
   const isLast = useMemo(() => parent && index === parent.items.length - 1, [index, parent])
@@ -185,7 +185,7 @@ const Link = ({
 
   useEffect(() => {
     animationTimer.current = setTimeout(() => {
-      setInitialAnimation(true)
+      setAnimate(true)
     }, 50)
     return () => clearTimeout(animationTimer.current)
   }, [])
@@ -195,10 +195,10 @@ const Link = ({
     canDrop: false,
     hover: (draggedItem, monitor) => {
       if (!dropRefContainer.current) return
-      if (draggedItem.id === link.id || (parent && draggedItem.id === parent.id)) return
+      if (draggedItem.id === item.id || (parent && draggedItem.id === parent.id)) return
       if (!monitor.isOver({ shallow: true })) return
 
-      const childNode = findItem(link.id, draggedItem.items)
+      const childNode = findItem(item.id, draggedItem.items)
       if (childNode) return
 
       const hoverBoundingRect = dropRefContainer.current.getBoundingClientRect()
@@ -212,7 +212,7 @@ const Link = ({
       if (draggedItem.index < index && hoverClientX < hoverMiddleX) return
       if (draggedItem.index > index && hoverClientX > hoverMiddleX) return
 
-      moveItem(draggedItem.id, link.id, parent && parent.id)
+      moveItem(draggedItem.id, item.id, parent && parent.id)
 
       draggedItem.index = index
     },
@@ -220,10 +220,10 @@ const Link = ({
 
   const [, dragRef, previewRef] = useDrag({
     item: {
-      id: link.id,
+      id: item.id,
       parent,
       index,
-      items: link.items,
+      items: item.items,
       type: 'item',
     },
     begin: () => {
@@ -241,19 +241,19 @@ const Link = ({
     drop: (draggedItem, monitor) => {
       if (!monitor.isOver({ shallow: true })) return
 
-      const childNode = findItem(link.id, draggedItem.items)
+      const childNode = findItem(item.id, draggedItem.items)
       if (childNode) return
 
-      if ((draggedItem.parent && draggedItem.parent.id === link.id) || draggedItem.id === link.id) return
+      if ((draggedItem.parent && draggedItem.parent.id === item.id) || draggedItem.id === item.id) return
 
-      moveItem(draggedItem.id, undefined, link.id)
+      moveItem(draggedItem.id, undefined, item.id)
     },
     collect: monitor => {
       const draggedItem = monitor.getItem()
       if (!draggedItem || draggedItem.type !== 'item') return { isOverSubTree: false }
-      const descendantNode = findItem(link.id, draggedItem.items)
+      const descendantNode = findItem(item.id, draggedItem.items)
 
-      const parentOrSelf = (draggedItem.parent && draggedItem.parent.id === link.id) || draggedItem.id === link.id
+      const parentOrSelf = (draggedItem.parent && draggedItem.parent.id === item.id) || draggedItem.id === item.id
 
       const isOverSubTree = !descendantNode && !parentOrSelf && monitor.isOver({ shallow: true })
 
@@ -264,15 +264,15 @@ const Link = ({
   })
 
   return (
-    <Container initialAnimation={initialAnimation} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary}>
+    <Container animate={animate} isFirst={isFirst} isLast={isLast} isPrimary={isPrimary}>
       <GreenSquareEffect active={isOverSubTree} />
       <PositionContainer isFirst={isFirst} isPrimary={isPrimary} ref={previewRef}>
         <DragContainer ref={dragRef}>
           <DropContainer draggingItem={draggingItem} ref={dropRefContainer} />
           <div style={{ position: 'relative' }}>
-            <LinkContentContainer
-              initialAnimation={initialAnimation}
-              link={link}
+            <ContentContainer
+              animate={animate}
+              item={item}
               renaming={renaming}
               setDraggingItem={setDraggingItem}
               setRenaming={setRenaming}
@@ -284,9 +284,9 @@ const Link = ({
         </DragContainer>
         <ItemsTree
           draggingItem={draggingItem}
-          link={link}
+          item={item}
           moveItem={moveItem}
-          parent={link}
+          parent={item}
           renaming={renaming}
           setDraggingItem={setDraggingItem}
           setRenaming={setRenaming}
@@ -298,4 +298,4 @@ const Link = ({
   )
 }
 
-export default Link
+export default Item

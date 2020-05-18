@@ -1,7 +1,7 @@
 import BlankState from './blank-state'
-import Link from './link'
+import Item from './item'
 import Modal from './modal'
 import Sidebar from './sidebar'
 import Tree from './tree'
 
-export { Link, Modal, Tree, BlankState, Sidebar }
+export { Item, Modal, Tree, BlankState, Sidebar }

@@ -1,6 +1,6 @@
-import Link from './link'
+import Item from './item'
 import React, { useCallback, useState } from 'react'
-import { findTreeLink, sortLink, updateLink } from '../utils'
+import { findTreeItem, sortItems, updateItem } from '../utils'
 
 const Tree = ({ treeData, setTreeData }) => {
   const [renaming, setRenaming] = useState(null)
@@ -11,23 +11,23 @@ const Tree = ({ treeData, setTreeData }) => {
   const moveItem = useCallback(
     (id, afterId, nodeId) => {
       if (id === afterId) return
-      const link = findTreeLink({ items: treeData, id }).item
-      var newTreeData = sortLink(treeData, link, afterId, nodeId)
+      const item = findTreeItem({ items: treeData, id }).item
+      var newTreeData = sortItems(treeData, item, afterId, nodeId)
       if (nodeId) {
-        const nodeLink = findTreeLink({ items: newTreeData, id: nodeId }).item
-        newTreeData = updateLink(newTreeData, nodeLink, { expanded: true })
+        const nodeItem = findTreeItem({ items: newTreeData, id: nodeId }).item
+        newTreeData = updateItem(newTreeData, nodeItem, { expanded: true })
       }
       setTreeData(newTreeData)
     },
     [treeData, setTreeData]
   )
 
-  return treeData.map(branch => (
-    <Link
+  return treeData.map(item => (
+    <Item
       draggingItem={draggingItem}
       isPrimary
-      key={branch.id}
-      link={branch}
+      item={item}
+      key={item.id}
       moveItem={moveItem}
       parent={null}
       renaming={renaming}

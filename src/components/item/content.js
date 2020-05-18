@@ -1,4 +1,4 @@
-import LinkHead from './link-head'
+import ItemHead from './head'
 import Properties from './properties'
 import React from 'react'
 import styled from 'styled-components'
@@ -20,16 +20,16 @@ const Container = styled.div`
 `
 
 const Content = ({
-  link,
+  item,
   onInputChange,
   onInputKeyDown,
-  renameLink,
+  renameItem,
   renaming,
   toggleChangeName,
   toggleChangeType,
-  addLinkProp,
+  addItemProp,
   changingProperty,
-  deleteLinkProp,
+  deleteItemProp,
   onPropChange,
   enablePropChanging,
   selectedPropInput,
@@ -40,21 +40,21 @@ const Content = ({
 }) => {
   return (
     <Container>
-      <LinkHead
-        link={link}
+      <ItemHead
+        item={item}
         onInputChange={onInputChange}
         onInputKeyDown={onInputKeyDown}
-        renameLink={renameLink}
+        renameItem={renameItem}
         renaming={renaming}
         toggleChangeName={toggleChangeName}
         toggleChangeType={toggleChangeType}
       />
       <Properties
-        addLinkProp={addLinkProp}
+        addItemProp={addItemProp}
         changingProperty={changingProperty}
-        deleteLinkProp={deleteLinkProp}
+        deleteItemProp={deleteItemProp}
         enablePropChanging={enablePropChanging}
-        link={link}
+        item={item}
         onPropChange={onPropChange}
         selectedPropInput={selectedPropInput}
         setChangingProperty={setChangingProperty}
