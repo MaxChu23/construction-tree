@@ -71,7 +71,6 @@ const Container = styled.div`
 `
 
 const TreePage = () => {
-  // const [treeData, setTreeData] = useState([])
   const [treeData, setTreeData] = useState(initialData || [])
 
   if (treeData.length === 0) return <BlankState setTreeData={setTreeData} treeData={treeData} />

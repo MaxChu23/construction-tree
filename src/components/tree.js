@@ -6,8 +6,6 @@ const Tree = ({ treeData, setTreeData }) => {
   const [renaming, setRenaming] = useState(null)
   const [draggingItem, setDraggingItem] = useState(null)
 
-  // const moveItemTimer = useRef(null)
-
   const moveItem = useCallback(
     (id, afterId, nodeId) => {
       if (id === afterId) return
