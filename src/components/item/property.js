@@ -1,65 +1,8 @@
 import Input from '../input'
+import PropDeleteButton from './prop-delete-button'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useDrag, useDrop } from 'react-dnd'
-
-const DeleteButton = styled.button`
-  -webkit-appearance: none;
-  border: none;
-  background: none;
-  position: absolute;
-  top: 0px;
-  left: -6px;
-  padding: 0;
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-  outline: none;
-  font-weight: 700;
-  font-size: 12px;
-  line-height: 0;
-
-  ${({ showConfirmation }) => showConfirmation && 'color: #f50; border: 1px solid #f50; border-radius: 50%;'}
-
-  &:hover {
-    span {
-      &::before,
-      &::after {
-        background: #f50;
-      }
-    }
-  }
-
-  span {
-    position: absolute;
-    top: 1px;
-    transform: rotate(45deg) translate(-50%, -50%);
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 8px;
-      height: 8px;
-      background: #333;
-      transform: scale(0.5);
-      transition: all 0.2s;
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      width: 8px;
-      height: 8px;
-      background: #333;
-      transform: scale(0.5);
-      transition: all 0.2s;
-    }
-  }
-`
 
 const PropertyContainer = styled.div`
   display: flex;
@@ -73,7 +16,7 @@ const PropertyContainer = styled.div`
   opacity: ${({ isDragging }) => (!isDragging ? 1 : 0)};
 
   &:hover {
-    ${DeleteButton} span {
+    .btn-delete-prop span {
       &::before {
         transform: scaleY(0.2);
       }
@@ -148,7 +91,6 @@ const Property = ({
   onPropInputKeyDown,
   onPropChange,
   propValueInputRef,
-  selectedPropInput,
   deleteItemProp,
   moveProp,
   setDraggingItem,
@@ -190,15 +132,10 @@ const Property = ({
       const clientOffset = monitor.getClientOffset()
 
       const hoverClientY = clientOffset.y - hoverBoundingRect.top
-      // Only perform the move when the mouse has crossed half of the items height
-      // When dragging downwards, only move when the cursor is below 50%
-      // When dragging upwards, only move when the cursor is above 50%
-      // Dragging downwards
       if (!external && prop.index < index && hoverClientY < hoverMiddleY) return
-      // Dragging upwards
       if (!external && prop.index > index && hoverClientY > hoverMiddleY) return
-      // Time to actually perform the action
       moveProp(prop, index)
+
       // Note: we're mutating the monitor item here!
       // Generally it's better to avoid mutations,
       // but it's good here for the sake of performance
@@ -240,15 +177,15 @@ const Property = ({
       onDoubleClick={enablePropChanging}
       ref={ref}
     >
-      <DeleteButton onClick={onDeleteButtonClick} showConfirmation={showConfirmation}>
+      <PropDeleteButton className="btn-delete-prop" onClick={onDeleteButtonClick} showConfirmation={showConfirmation}>
         {showConfirmation ? '?' : <span />}
-      </DeleteButton>
+      </PropDeleteButton>
       <PropertyName data-prop-type="name">
         {changingProperty && changingProperty.id === property.id ? (
           <>
             <InputFiller>{changingProperty.name || 'Key'}</InputFiller>
             <PropInput
-              autoFocus={selectedPropInput === 'name' || changingProperty.name === ''}
+              autoFocus={changingProperty.name === ''}
               color="#333"
               data-prop-type="name"
               maxLength={24}
@@ -272,7 +209,6 @@ const Property = ({
             <>
               <InputFiller>{changingProperty.value || 'Value'}</InputFiller>
               <PropInput
-                autoFocus={selectedPropInput === 'value'}
                 color="#333"
                 data-prop-type="value"
                 maxLength={32}
@@ -288,7 +224,6 @@ const Property = ({
             </>
           ) : (
             <PropSelect
-              autoFocus={selectedPropInput === 'value'}
               data-prop-type="value"
               onBlur={onPropInputBlur}
               onChange={onPropChange}

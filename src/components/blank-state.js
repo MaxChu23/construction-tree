@@ -1,3 +1,4 @@
+import ButtonBase from './button-base'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 
@@ -118,23 +119,16 @@ const Input = styled.input`
   }
 `
 
-const BigButton = styled.button`
-  -webkit-appearance: none;
-  cursor: pointer;
-
+const BigButton = styled(ButtonBase)`
   position: relative;
   margin-top: 25px;
   padding: 8px 40px;
 
   color: #fff;
-  outline: none;
   background: linear-gradient(45deg, #3496fc, #2ae4e5);
-  border: 1px solid transparent;
   border-radius: 8px;
 
   font-size: 18px;
-  font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 1px;
 `
 

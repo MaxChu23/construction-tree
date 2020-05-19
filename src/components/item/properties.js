@@ -1,5 +1,5 @@
 import Property from './property'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useRef } from 'react'
 import styled from 'styled-components'
 import { findTreeItem, isTextSelected, sortProp } from '../../utils'
 import { useDrop } from 'react-dnd'
@@ -32,7 +32,6 @@ const Properties = ({
   setChangingProperty,
 }) => {
   const propBlurTimeout = useRef(null)
-  const [selectedPropInput, setSelectedPropInput] = useState(null)
   const propNameInputRef = useRef(null)
   const propValueInputRef = useRef(null)
 
@@ -49,6 +48,11 @@ const Properties = ({
       prop.item.properties.splice(0, 0, prop.propReference)
     },
   })
+
+  const getActiveInput = useCallback(() => {
+    if (document.activeElement === propNameInputRef.current) return 'name'
+    if (document.activeElement === propValueInputRef.current) return 'value'
+  }, [])
 
   const updateItemProp = useCallback(
     prop => {
@@ -82,50 +86,74 @@ const Properties = ({
     [changingProperty, setChangingProperty]
   )
 
-  useEffect(() => {
-    if (!selectedPropInput || !changingProperty || changingProperty.type !== 'text') return
-    if (selectedPropInput === 'name') {
-      propNameInputRef.current.select()
-    } else {
-      propValueInputRef.current.select()
-    }
-    setSelectedPropInput(null)
-  }, [changingProperty, selectedPropInput])
+  const selectElementText = useCallback(element => {
+    if (document.activeElement === element && isTextSelected(element)) return
+    element.select()
+  }, [])
 
   const enablePropChanging = useCallback(
     event => {
       const propId = event.currentTarget.getAttribute('data-prop-id')
       if (!propId) return
       setChangingProperty(item.properties.find(prop => prop.id === propId))
-      const type = event.target.getAttribute('data-prop-type')
-      if (type) {
-        setSelectedPropInput(type)
-      }
+      const targetType = event.target.getAttribute('data-prop-type')
+      setTimeout(() => {
+        selectElementText(targetType === 'value' ? propValueInputRef.current : propNameInputRef.current)
+      }, 0)
     },
-    [item, setChangingProperty]
+    [item, setChangingProperty, selectElementText]
   )
 
-  const updateProp = useCallback(() => {
-    updateItemProp(changingProperty)
-    setChangingProperty(null)
-  }, [changingProperty, updateItemProp, setChangingProperty])
+  const switchInputSelection = useCallback(
+    event => {
+      const pressedEnter = event && event.keyCode === 13
+      const pressedTab = event && event.keyCode === 9
+      const pressedShiftTab = pressedTab && event.shiftKey
+      const activeInput = getActiveInput()
+
+      const shouldReverse =
+        (activeInput === 'name' && pressedTab && !pressedShiftTab) ||
+        (activeInput === 'name' && (pressedTab || pressedEnter) && changingProperty.value === '') ||
+        (activeInput === 'value' && pressedShiftTab)
+
+      if (shouldReverse) {
+        event.preventDefault()
+        const elementToSelect = activeInput === 'name' ? propValueInputRef.current : propNameInputRef.current
+        if (changingProperty.type === 'boolean') {
+          return propValueInputRef.current.focus()
+        }
+        return selectElementText(elementToSelect)
+      }
+      setChangingProperty(null)
+    },
+    [changingProperty, setChangingProperty, selectElementText, getActiveInput]
+  )
+
+  const updateProp = useCallback(
+    event => {
+      updateItemProp(changingProperty)
+      switchInputSelection(event)
+    },
+    [changingProperty, updateItemProp, switchInputSelection]
+  )
 
   const onPropInputKeyDown = useCallback(
     event => {
-      if (event.key === 'Enter') {
-        updateProp()
+      if (event.keyCode === 13 || event.keyCode === 9) {
+        updateProp(event)
       }
     },
     [updateProp]
   )
 
-  const onPropInputFocus = useCallback(event => {
-    clearTimeout(propBlurTimeout.current)
-    if (event.currentTarget.tagName !== 'INPUT') return
-    if (!isTextSelected(event.currentTarget)) {
-      event.currentTarget.select()
-    }
-  }, [])
+  const onPropInputFocus = useCallback(
+    event => {
+      clearTimeout(propBlurTimeout.current)
+      if (event.currentTarget.tagName !== 'INPUT') return
+      selectElementText(event.currentTarget)
+    },
+    [selectElementText]
+  )
 
   const onPropInputBlur = useCallback(() => {
     propBlurTimeout.current = setTimeout(() => {
@@ -160,7 +188,6 @@ const Properties = ({
           property={property}
           propNameInputRef={propNameInputRef}
           propValueInputRef={propValueInputRef}
-          selectedPropInput={selectedPropInput}
           setDraggingItem={setDraggingItem}
         />
       ))}

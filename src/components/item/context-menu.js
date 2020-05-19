@@ -1,3 +1,4 @@
+import ButtonBase from '../button-base'
 import Portal from '../portal'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import styled from 'styled-components'
@@ -19,11 +20,7 @@ const ButtonsContainer = styled.div`
   outline: none;
 `
 
-const Button = styled.button`
-  -webkit-appearance: none;
-  outline: none;
-  user-select: none;
-
+const Button = styled(ButtonBase)`
   border-radius: 4px;
 
   ${({ showPrompt }) =>
@@ -47,14 +44,11 @@ const Button = styled.button`
   }
 
   font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
   white-space: nowrap;
 
   left: 50%;
   z-index: 12;
   padding: 3px 6px;
-  cursor: pointer;
 
   ${({ index }) => `
     transition: 0.3s all, 0.1s color, transform 0.2s ${index / 20}s, opacity 0.2s ${index / 20}s;
@@ -97,7 +91,7 @@ const ContextMenu = ({ setShow, show, clickMenuButton, content, anchorElement })
   const [promptId, setPromptId] = useState(null)
   const [animateButtons, setAnimateButtons] = useState(false)
   const [showContainer, setShowContainer] = useState(false)
-  // Without the opacity: 0 it will show on the screen right after appearing in the top-left corner of the screen!
+  // Without this line it will be visible in the top-left corner of the screen right after starting animation!
   const [containerStyle, setContainerStyle] = useState({ opacity: 0 })
 
   const buttonsContainerRef = useRef(null)
@@ -139,6 +133,12 @@ const ContextMenu = ({ setShow, show, clickMenuButton, content, anchorElement })
       setAnimateButtons(show)
     }, 30)
   }, [show])
+
+  useEffect(() => {
+    if (!showContainer) {
+      setCurrentMenuContent(content && content.main)
+    }
+  }, [content, showContainer])
 
   useEffect(() => {
     if (!show) return
